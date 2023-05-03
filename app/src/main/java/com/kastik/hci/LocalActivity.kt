@@ -8,10 +8,10 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.Divider
-import androidx.compose.material3.DrawerState
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
@@ -32,32 +32,32 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat.startActivity
 import com.kastik.hci.ui.shit.MyDrawer
 import com.kastik.hci.ui.shit.MyTopBar
-import com.kastik.hci.ui.shit.FinalPreview
 import com.kastik.hci.ui.theme.HCI_ComposeTheme
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
 
-class MainActivity : ComponentActivity() {
-    @OptIn(ExperimentalMaterial3Api::class)
+class LocalActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
-            val scope = rememberCoroutineScope()
-            MainActivityUI(drawerState, scope)
+            LocalActivityUI()
         }
     }
 }
 
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MainActivityUI(drawerState:DrawerState,scope:CoroutineScope){
-    Scaffold(topBar = { MyTopBar(drawerState = drawerState, scope = scope) }) { paddingValues ->
+fun LocalActivityUI(){
+    val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
+    val scope = rememberCoroutineScope()
+    MyDrawer(drawerState = drawerState)
+    Scaffold(topBar = { MyTopBar(drawerState = drawerState, scope = scope) })
+    { paddingValues ->
         Row(Modifier.padding(paddingValues)) {
-            MyDrawer(drawerState = drawerState)
+
             Divider()
-            Text(text = "This is Main UI")
+            Text(text = "This is Main UI", modifier = Modifier.size(500.dp))
         }
     }
 }
