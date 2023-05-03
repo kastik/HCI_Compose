@@ -6,6 +6,7 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -30,6 +31,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat.startActivity
+import com.kastik.hci.ui.shit.DrawerSheet
 import com.kastik.hci.ui.shit.MyDrawer
 import com.kastik.hci.ui.shit.MyTopBar
 import com.kastik.hci.ui.theme.HCI_ComposeTheme
@@ -48,16 +50,22 @@ class LocalActivity : ComponentActivity() {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun LocalActivityUI(){
+fun LocalActivityUI() {
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
-    MyDrawer(drawerState = drawerState)
-    Scaffold(topBar = { MyTopBar(drawerState = drawerState, scope = scope) })
-    { paddingValues ->
-        Row(Modifier.padding(paddingValues)) {
-
-            Divider()
-            Text(text = "This is Main UI", modifier = Modifier.size(500.dp))
+    ModalNavigationDrawer(
+        drawerState = drawerState,
+        drawerContent = { DrawerSheet() },
+        content = {
+            Scaffold(
+                topBar = { MyTopBar(scope = scope, drawerState = drawerState) }
+            ){ paddingValues ->
+                Column(modifier =Modifier.padding(top = paddingValues.calculateTopPadding())
+                ){
+                    Text(text = "Local Activity stuff")
+                }
+            }
         }
-    }
+    )
+
 }

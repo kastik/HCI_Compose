@@ -47,6 +47,8 @@ import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat.startActivity
 import androidx.drawerlayout.widget.DrawerLayout
+import com.kastik.hci.ui.shit.DrawerSheet
+import com.kastik.hci.ui.shit.MyTopBar
 
 import com.kastik.hci.ui.theme.HCI_ComposeTheme
 import kotlinx.coroutines.launch
@@ -56,6 +58,30 @@ class RemoteActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
+            RemoteActivityUI()
         }
     }
+}
+
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun RemoteActivityUI() {
+    val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
+    val scope = rememberCoroutineScope()
+    ModalNavigationDrawer(
+        drawerState = drawerState,
+        drawerContent = { DrawerSheet() },
+        content = {
+            Scaffold(
+                topBar = { MyTopBar(scope = scope, drawerState = drawerState) }
+            ){ paddingValues ->
+                Column(modifier =Modifier.padding(top = paddingValues.calculateTopPadding())
+                ){
+                    Text(text = "Remote Activity stuff")
+                }
+            }
+        }
+    )
+
 }
