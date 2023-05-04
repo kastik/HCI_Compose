@@ -58,7 +58,11 @@ class RemoteActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            RemoteActivityUI()
+            HCI_ComposeTheme() {
+                Surface() {
+                    RemoteActivityUI()
+                }
+            }
         }
     }
 }
