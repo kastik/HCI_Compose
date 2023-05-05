@@ -1,78 +1,40 @@
 package com.kastik.hci.ui.shit
 
 import android.content.Intent
-import android.view.View.OnLongClickListener
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.combinedClickable
-import androidx.compose.foundation.interaction.Interaction
-import androidx.compose.foundation.interaction.InteractionSource
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentHeight
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccountBox
-import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.Divider
 import androidx.compose.material3.DrawerState
-import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.NavigationDrawerItem
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
-import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.kastik.hci.LocalActivity
 import com.kastik.hci.MainActivity
 import com.kastik.hci.RemoteActivity
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
-import androidx.compose.material3.CardElevation
-import androidx.compose.material3.Surface
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Alignment.Companion.Center
-import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.sp
-import com.kastik.hci.database.Product
-import com.kastik.hci.database.createSampleData
-import com.kastik.hci.ui.theme.HCI_ComposeTheme
 
+
+
+enum class Screens(){
+    Main,
+    Local,
+    Remote
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -110,31 +72,13 @@ fun MyTopBar(scope:CoroutineScope,drawerState: DrawerState){
 
             }
         }
-            )
-}
-
-
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun MyDrawer(drawerState:DrawerState,scope:CoroutineScope) {
-
-    ModalNavigationDrawer(
-        drawerState = drawerState,
-        drawerContent = { DrawerSheet() },
-        content = {
-            Row {
-                MyTopBar(scope = scope, drawerState = drawerState)
-            }
-            Column {
-            }
-        }
     )
 }
 
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DrawerSheet(){
+fun DrawerSheet(navController:NavController){
     ModalDrawerSheet {
         Modifier.size(50.dp)
         val context = LocalContext.current
@@ -143,22 +87,64 @@ fun DrawerSheet(){
         NavigationDrawerItem(
             label = { Text(text = "Main") },
             selected = false,
-            onClick = { context.startActivity(Intent(context, MainActivity::class.java)) }
+            onClick = { navController.navigate(Screens.Main.name)
+            }
         )
         Divider()
         NavigationDrawerItem(
             label = { Text(text = "Local") },
             selected = false,
             onClick = {
-                context.startActivity(Intent(context, LocalActivity::class.java))
+                navController.navigate(Screens.Local.name)
             }
         )
         Divider()
         NavigationDrawerItem(
             label = { Text(text = "Drawer Item") },
             selected = false,
-            onClick = { context.startActivity(Intent(context, RemoteActivity::class.java)) }
+            onClick = {
+                navController.navigate(Screens.Remote.name)
+                }
         )
+    }
+}
+
+
+    @OptIn(ExperimentalMaterial3Api::class)
+@Composable
+@Preview
+fun MainUI() {
+    //val scaffoldState = rememberScaffoldState()
+    val scope = rememberCoroutineScope()
+    val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
+    val navController = rememberNavController()
+
+    HCI_ComposeTheme() {
+        Surface() {
+            ModalNavigationDrawer(
+                drawerState = drawerState,
+                drawerContent = { DrawerSheet(navController) },
+                content = {
+                    Scaffold(
+                        topBar = { MyTopBar(scope = scope, drawerState = drawerState) }
+                    ){ paddingValues ->
+                        NavHost(navController =navController ,startDestination=Screens.Main.name ,Modifier.padding(paddingValues)){
+                            composable(Screens.Main.name){
+                                MainActivityUI()
+                            }
+                            composable(Screens.Local.name){
+                                LocalActivityUI()
+                            }
+                            composable(Screens.Remote.name){
+                                RemoteActivityUI()
+                            }
+                        }
+                    }
+                }
+            )
+
+        }
+
     }
 }
 
@@ -251,9 +237,9 @@ fun CardPreview(){
                // MyCard()
                 Spacer(modifier =Modifier.padding(5.dp))
             }
-            
+
         }
-        
+
     }
 }
 
@@ -263,10 +249,36 @@ fun bottomNav(){
     HCI_ComposeTheme() {
         Surface() {
             MyCard(data = "asdasd") {
-                
+
             }
 
         }
-        
+
     }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun MainActivityUI() {
+
+    Text(text = "Main Activity stuff")
+
+}
+
+
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun LocalActivityUI() {
+
+    Text(text = "Local Activity stuff")
+
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun RemoteActivityUI() {
+
+    Text(text = "Remote Activity stuff")
+
 }

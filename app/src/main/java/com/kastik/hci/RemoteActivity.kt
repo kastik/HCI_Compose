@@ -47,7 +47,6 @@ import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat.startActivity
 import androidx.drawerlayout.widget.DrawerLayout
-import com.kastik.hci.database.createSampleData
 import com.kastik.hci.ui.shit.DrawerSheet
 import com.kastik.hci.ui.shit.MyTopBar
 
@@ -59,11 +58,6 @@ class RemoteActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            HCI_ComposeTheme() {
-                Surface() {
-                    RemoteActivityUI()
-                }
-            }
         }
         createSampleData(this)
     }
