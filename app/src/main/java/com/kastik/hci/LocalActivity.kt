@@ -6,6 +6,7 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.material3.Button
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -20,10 +21,12 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.room.Room
+import androidx.room.RoomDatabase
 import com.kastik.hci.database.AppDatabase
-import com.kastik.hci.database.Product
-import com.kastik.hci.database.ProductDao
+import com.kastik.hci.database.createSampleData
+import com.kastik.hci.database.myDao
 import com.kastik.hci.ui.shit.DrawerSheet
+import com.kastik.hci.ui.shit.MyCard
 import com.kastik.hci.ui.shit.MyTopBar
 import com.kastik.hci.ui.theme.HCI_ComposeTheme
 
@@ -31,32 +34,51 @@ import com.kastik.hci.ui.theme.HCI_ComposeTheme
 class LocalActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        val myDatabase = Room
+            .databaseBuilder(this,AppDatabase::class.java,"Database")
+            .fallbackToDestructiveMigration()
+            .allowMainThreadQueries()
+            .build()
         setContent {
             HCI_ComposeTheme() {
                 Surface() {
-                    LocalActivityUI()
+                    LocalActivityUI(myDatabase)
                 }
             }
         }
 
 
-        val db = Room.databaseBuilder(
+/*
+        val db1 = Room.databaseBuilder(
             applicationContext,
             AppDatabase::class.java, "Product"
-        ).allowMainThreadQueries().build()
+        ).allowMainThreadQueries().fallbackToDestructiveMigration().build()
+
+        val db2 = Room.databaseBuilder(
+            applicationContext,
+            AppDatabase::class.java, "Stock"
+        ).allowMainThreadQueries() .fallbackToDestructiveMigration().build()
+
+        val db3 = Room.databaseBuilder(
+            applicationContext,
+            AppDatabase::class.java, "Supplier"
+        ) .fallbackToDestructiveMigration().allowMainThreadQueries().build()
+
 
         //
-        val productDao = db.ProductDao()
+        //val productDao = db.ProductDao()
         //val products: List<Product> = ProductDao.getAll()
         //db.ProductDao().insertAll(Product(1,"asdas","asdasd"),Product(2,"asdas","asdasd"),Product(3,"asdas","asdasd"))
+
+ */
     }
 }
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-@Preview
-fun LocalActivityUI() {
+
+fun LocalActivityUI(myDatabase: AppDatabase) {
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
     ModalNavigationDrawer(
@@ -67,6 +89,11 @@ fun LocalActivityUI() {
                 topBar = { MyTopBar(scope = scope, drawerState = drawerState) }
             ){ paddingValues ->
                 Box(modifier =Modifier.padding(top = paddingValues.calculateTopPadding())){
+                    Text(text = "Some RandomText")
+                    LazyRow(){
+                       // items{ myDatabase.myDao().getAllProducts() }
+
+                    }
 
                 }
             }

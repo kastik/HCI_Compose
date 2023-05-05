@@ -31,7 +31,6 @@ class MainActivity : ComponentActivity() {
         val settings = getSharedPreferences("Shared_Preferences", 0)
 
         if(settings.getBoolean("first_run", true)) {
-            createSampleData(this)
             Log.d("MyLog","First Run")
             settings.edit().putBoolean("first_run", false).apply()
         }
