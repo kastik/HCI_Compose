@@ -17,6 +17,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.navigation.NavDestinationDsl
 import com.kastik.hci.database.createSampleData
 import com.kastik.hci.ui.shit.DrawerSheet
 import com.kastik.hci.ui.shit.MyTopBar

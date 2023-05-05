@@ -92,7 +92,7 @@ interface myDao {
 
 
     //TODO
-    @Query("SELECT * FROM stock")
+    @Query("SELECT * FROM Supplier")
     fun getAll(): List<Supplier>
 
 

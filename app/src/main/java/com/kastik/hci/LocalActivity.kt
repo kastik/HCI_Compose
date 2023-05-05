@@ -23,6 +23,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import com.kastik.hci.database.AppDatabase
+import com.kastik.hci.database.Supplier
 import com.kastik.hci.database.createSampleData
 import com.kastik.hci.database.myDao
 import com.kastik.hci.ui.shit.DrawerSheet
