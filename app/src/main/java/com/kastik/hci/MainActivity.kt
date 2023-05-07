@@ -13,7 +13,6 @@ class MainActivity : ComponentActivity() {
         setContent {
             MainUI()
         }
-
     }
 }
 

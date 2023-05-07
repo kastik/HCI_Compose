@@ -1,7 +1,7 @@
 package com.kastik.hci.database
 
 import android.content.Context
-import androidx.room.ColumnInfo
+import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Database
 import androidx.room.Delete
@@ -12,15 +12,35 @@ import androidx.room.PrimaryKey
 import androidx.room.Query
 import androidx.room.Room
 import androidx.room.RoomDatabase
-import kotlin.random.Random
+import kotlinx.coroutines.flow.Flow
 
 @Database(entities = [Product::class,Stock::class,Supplier::class], version = 1)
 abstract class AppDatabase : RoomDatabase() {
-    //abstract fun ProductDao(): ProductDao
-    //abstract fun SupplierDao(): SupplierDao
-    //abstract fun StockDao(): StockDao
+    abstract fun AppDao(): AppDao
 
-    abstract fun myDao(): myDao
+    companion object{
+        private var INSTANCE:AppDatabase? = null
+
+        fun getDatabase(context:Context):AppDatabase{
+            synchronized(this){
+                var instance = INSTANCE
+                if (instance == null) {
+                    instance = Room.databaseBuilder(
+                        context.applicationContext,
+                        AppDatabase::class.java,
+                        "Database.db"
+                    )
+                        //.fallbackToDestructiveMigration()
+                        .allowMainThreadQueries() //TODO Remove at some point
+                        .build()
+
+                    INSTANCE = instance
+                }
+                return instance
+            }
+        }
+
+    }
 }
 
 //TableName = ClassName of entities if not specified
@@ -58,50 +78,62 @@ data class Supplier(
 //TODO Add @Update fun
 
 @Dao
-interface myDao {
-    @Insert
-    fun insertAll(vararg products: Product)
+interface AppDao {
+    @Query("SELECT * FROM Stock WHERE ProductId==:ProductId")
+    fun getStockOfProduct(ProductId: Int) : Flow<Stock>
 
-    @Delete
-    fun delete(products: Product)
+    @Query("SELECT * FROM SUPPLIER WHERE ProductId==:ProductId")
+    fun getSupplierOfProduct(ProductId: Int) : Flow<Supplier>
 
-    @Query("SELECT * FROM product")
+    @Query("SELECT * FROM PRODUCT")
     fun getAllProducts(): List<Product>
 
-
     @Insert
-    fun insertAllStocks(vararg stocks: Stock)
+    fun insertProduct(product: Product)
 
     @Delete
-    fun delete(stock: Stock)
+    suspend fun deleteProduct(product: Product)
 
-    @Query("SELECT * FROM stock")
-    fun getAllStocks(): List<Stock>
-
-
-
-    @Insert
-    fun insertAllSuppliers(vararg supplier: Supplier)
-
-    @Delete
-    fun delete(supplier: Supplier)
-
-    @Query("SELECT * FROM supplier")
-    fun getAllSuppliers(): List<Supplier>
-
-
-
-    //TODO
-    @Query("SELECT * FROM Supplier")
-    fun getAll(): List<Supplier>
-
+    @Query("SELECT COUNT(ProductId) FROM Product")
+    fun getDataCount(): LiveData<Int?>
 
     //TODO Add @Update fun
+    //TODO ADD suspend fun on UPDATE DELETE AND MODIFY
 }
 
 
+interface ProductRepo {
+    fun getStockOfProduct(ProductId: Int) : Flow<Stock>
+    fun getSupplierOfProduct(ProductId: Int) : Flow<Supplier>
+    fun getAllProducts(): LiveData<List<Product>>
+    fun insertProduct(product: Product)
+    suspend fun deleteProduct(int: Int)
 
-fun createSampleData(context: Context){
+
+
+}
+/*
+class ProductRepoImp(private val appDao: AppDao) : ProductRepo{
+    override fun getStockOfProduct(ProductId: Int): Flow<Stock> = appDao.getStockOfProduct(ProductId)
+
+    override fun getSupplierOfProduct(ProductId: Int): Flow<Supplier> = appDao.getSupplierOfProduct(ProductId)
+
+    override fun getAllProducts(): LiveData<List<Product>> = appDao.getAllProducts()
+
+    override suspend fun insertProduct(product: Product) = appDao.insertProduct(product)
+
+    override suspend fun deleteProduct(int: Int) = appDao.deleteProduct(int)
+
+
+
+}
+
+
+ */
+
+
+/*
+fun createSampleData(context: Context) {
 
     val myDatabase = Room.databaseBuilder(
         context,
@@ -109,16 +141,35 @@ fun createSampleData(context: Context){
     ).allowMainThreadQueries().build()
 
 
-    //val productDao = db.ProductDao()
-    for(i:Int in 1..100){
-        myDatabase.myDao().insertAll(
-            Product(i,java.util.UUID.randomUUID().toString(), java.util.UUID.randomUUID().toString(),Random.nextInt(),java.util.UUID.randomUUID().toString()))
+        //val productDao = db.ProductDao()
+        for (i: Int in 1..100) {
+            myDatabase.myDao().insertAll(
+                Product(
+                    i,
+                    java.util.UUID.randomUUID().toString(),
+                    java.util.UUID.randomUUID().toString(),
+                    Random.nextInt(),
+                    java.util.UUID.randomUUID().toString()
+                )
+            )
+            myDatabase.myDao().insertAll(
+                Stock(i, Random.nextInt(), Random.nextInt())
+            )
 
-        myDatabase.myDao().insertAllStocks(
-            Stock(i,Random.nextInt(),Random.nextInt()))
+            myDatabase.myDao().insertAll(
+                Supplier(
+                    i,
+                    i,
+                    java.util.UUID.randomUUID().toString(),
+                    java.util.UUID.randomUUID().toString(),
+                    java.util.UUID.randomUUID().toString()
+                )
+            )
 
-        myDatabase.myDao().insertAllSuppliers(
-            Supplier(i,i,java.util.UUID.randomUUID().toString(),java.util.UUID.randomUUID().toString(),java.util.UUID.randomUUID().toString()))
-
+        }
     }
-}
+
+
+
+
+ */
