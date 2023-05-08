@@ -1,7 +1,8 @@
-package com.kastik.hci.ui.shit
+package com.kastik.hci.ui.mainComponents
 
 import android.annotation.SuppressLint
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
@@ -11,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -56,11 +58,14 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.ktx.Firebase
 import com.kastik.hci.database.AppDatabase
 import com.kastik.hci.database.Product
 import com.kastik.hci.ui.theme.HCI_ComposeTheme
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import kotlin.random.Random
 
 
 enum class Screens {
@@ -172,14 +177,19 @@ fun BottomNav() {
 fun DropDownMenu() {
     val db = AppDatabase.getDatabase(LocalContext.current)
     var expanded by remember { mutableStateOf(false) }
-    IconButton(onClick = { expanded = true }) {
+    IconButton(
+        onClick = { expanded = true }) {
         Icon(Icons.Default.MoreVert, contentDescription = "Localized description")
     }
-    DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+    DropdownMenu(
+        expanded = expanded,
+        onDismissRequest = { expanded = false } ,
+        modifier = Modifier.wrapContentSize()) {
         DropdownMenuItem(text = { Text("Insert") }, onClick = {
+            expanded = false
             db.AppDao().insertProduct(
                 Product(
-                    1, "asdasdad", "asdasd", 1, "kaka"
+                    Random.nextInt(), "asdasdad", "asdasd", 1, "kaka"
                 )
             )
         }, leadingIcon = {
@@ -189,7 +199,9 @@ fun DropDownMenu() {
         })
         Divider()
         DropdownMenuItem(text = { Text("Edit") },
-            onClick = { /* Handle settings! */ },
+            onClick = {
+                expanded = false
+            },
             leadingIcon = {
                 Icon(
                     Icons.Outlined.Edit, contentDescription = null
@@ -197,7 +209,9 @@ fun DropDownMenu() {
             })
         Divider()
         DropdownMenuItem(text = { Text("Delete") },
-            onClick = { /* Handle send feedback! */ },
+            onClick = {
+                expanded = false
+            },
             leadingIcon = {
                 Icon(
                     Icons.Outlined.Delete, contentDescription = null
@@ -210,31 +224,17 @@ fun DropDownMenu() {
 @Composable
 fun MainActivityUI() {
     Text(text = "Hi")
-
 }
 
 
 @Composable
 fun LocalActivityUI() {
-
     val lazyListState = rememberLazyListState()
-
-
     val db = AppDatabase.getDatabase(LocalContext.current)
-    //val mdata = remember { mutableListOf(db.AppDao().getAllProducts()) }
     val mdata = db.AppDao().getAllProducts().collectAsState(initial = emptyList())
-    //val products = remember { mutableStateOf<Product>(db.AppDao().getAllProducts()) }
-    //val scope = rememberCoroutineScope()
-    //CoroutineScope(scope.coroutineContext).apply {}
-
-    /*
-        val datalist = AppDatabase.getDatabase(LocalContext.current).AppDao().getAllProducts()
-
-     */
     LazyColumn(Modifier.fillMaxSize()) {
         itemsIndexed(mdata.value){index, item ->
         MyCard(product = item)
-
         }
     }
 }
@@ -242,7 +242,7 @@ fun LocalActivityUI() {
 
 @Composable
 fun RemoteActivityUI() {
-
+    val db = Firebase.firestore
     Text(text = "Remote Activity stuff")
 
 }
@@ -251,15 +251,20 @@ fun RemoteActivityUI() {
 @Composable
 fun MyCard(
     product: Product
-    //, onClick: () -> Unit
+
+    //,onClick: () -> Unit
 ) {
+    var expand = remember { false}
+    var text = remember { "kostas"}
     Card(
-        
         shape = MaterialTheme.shapes.large,
         modifier = Modifier
             .padding(bottom = 2.dp, top = 2.dp)
             .fillMaxWidth()
             .height(IntrinsicSize.Min)
+            .clickable(onClick = {
+                expand = !expand
+            })
         //shape = MaterialTheme.shapes.large,
         //border = BorderStroke(2.dp,MaterialTheme.colorScheme.inversePrimary),
         //elevation = CardDefaults.cardElevation(defaultElevation = 10.dp)
@@ -270,6 +275,13 @@ fun MyCard(
                     .weight(1f)
                     .padding(5.dp)
             ) {
+                if (!expand){
+                    text = "kastik"
+                }
+                else{
+                    text= "kostas"
+                }
+                Text(text = text)
                 Text(text = product.productName)
                 Spacer(modifier = Modifier.padding(5.dp))
                 Text(text = product.productManufacturer.toString())

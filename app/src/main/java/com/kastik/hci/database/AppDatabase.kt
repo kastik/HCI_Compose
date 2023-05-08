@@ -80,10 +80,10 @@ data class Supplier(
 @Dao
 interface AppDao {
     @Query("SELECT * FROM Stock WHERE ProductId==:ProductId")
-    fun getStockOfProduct(ProductId: Int) : Flow<Stock>
+    fun getStockOfProduct(ProductId: Int): Flow<Stock>
 
     @Query("SELECT * FROM SUPPLIER WHERE ProductId==:ProductId")
-    fun getSupplierOfProduct(ProductId: Int) : Flow<Supplier>
+    fun getSupplierOfProduct(ProductId: Int): Flow<Supplier>
 
     @Query("SELECT * FROM PRODUCT")
     fun getAllProducts(): Flow<List<Product>>
@@ -100,76 +100,3 @@ interface AppDao {
     //TODO Add @Update fun
     //TODO ADD suspend fun on UPDATE DELETE AND MODIFY
 }
-
-
-/*
-interface ProductRepo {
-    fun getStockOfProduct(ProductId: Int) : Flow<Stock>
-    fun getSupplierOfProduct(ProductId: Int) : Flow<Supplier>
-    fun getAllProducts(): Flow<List<Product>>
-    suspend fun insertProduct(product: Product)
-    //suspend fun deleteProduct(int: Int)
-
-
-
-}
-
- */
-
-class ProductRepoImp(private val appDao: AppDao){
-    fun getStockOfProduct(ProductId: Int): Flow<Stock> = appDao.getStockOfProduct(ProductId)
-
-    fun getSupplierOfProduct(ProductId: Int): Flow<Supplier> = appDao.getSupplierOfProduct(ProductId)
-
-    //fun getAllProducts(): Flow<Product> = appDao.getAllProducts()
-
-    suspend fun insertProduct(product: Product) = appDao.insertProduct(product)
-
-    //override suspend fun deleteProduct(int: Int) = appDao.deleteProduct()
-
-
-
-}
-
-
-/*
-fun createSampleData(context: Context) {
-
-    val myDatabase = Room.databaseBuilder(
-        context,
-        AppDatabase::class.java, "Database"
-    ).allowMainThreadQueries().build()
-
-
-        //val productDao = db.ProductDao()
-        for (i: Int in 1..100) {
-            myDatabase.myDao().insertAll(
-                Product(
-                    i,
-                    java.util.UUID.randomUUID().toString(),
-                    java.util.UUID.randomUUID().toString(),
-                    Random.nextInt(),
-                    java.util.UUID.randomUUID().toString()
-                )
-            )
-            myDatabase.myDao().insertAll(
-                Stock(i, Random.nextInt(), Random.nextInt())
-            )
-
-            myDatabase.myDao().insertAll(
-                Supplier(
-                    i,
-                    i,
-                    java.util.UUID.randomUUID().toString(),
-                    java.util.UUID.randomUUID().toString(),
-                    java.util.UUID.randomUUID().toString()
-                )
-            )
-
-        }
-    }
-
-
-
-
- */

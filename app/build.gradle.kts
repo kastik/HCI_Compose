@@ -28,9 +28,10 @@ android {
 
     buildTypes {
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
+            isShrinkResources = true
             signingConfig = signingConfigs.getByName("debug")
-            //proguardFiles getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
+            proguardFiles( getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
     }
     compileOptions {
@@ -91,6 +92,6 @@ dependencies {
 
 
     //TODO Remove after debuging
-    implementation("androidx.compose.runtime:runtime-tracing:1.0.0-alpha03")
+    implementation("androidx.compose.runtime:runtime-tracing")
 
 }
