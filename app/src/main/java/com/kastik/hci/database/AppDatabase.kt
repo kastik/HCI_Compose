@@ -86,13 +86,13 @@ interface AppDao {
     fun getSupplierOfProduct(ProductId: Int) : Flow<Supplier>
 
     @Query("SELECT * FROM PRODUCT")
-    fun getAllProducts(): List<Product>
+    fun getAllProducts(): Flow<List<Product>>
 
     @Insert
     fun insertProduct(product: Product)
 
     @Delete
-    suspend fun deleteProduct(product: Product)
+    fun deleteProduct(product: Product)
 
     @Query("SELECT COUNT(ProductId) FROM Product")
     fun getDataCount(): LiveData<Int?>
@@ -102,34 +102,34 @@ interface AppDao {
 }
 
 
+/*
 interface ProductRepo {
     fun getStockOfProduct(ProductId: Int) : Flow<Stock>
     fun getSupplierOfProduct(ProductId: Int) : Flow<Supplier>
-    fun getAllProducts(): LiveData<List<Product>>
-    fun insertProduct(product: Product)
-    suspend fun deleteProduct(int: Int)
+    fun getAllProducts(): Flow<List<Product>>
+    suspend fun insertProduct(product: Product)
+    //suspend fun deleteProduct(int: Int)
 
 
 
 }
-/*
-class ProductRepoImp(private val appDao: AppDao) : ProductRepo{
-    override fun getStockOfProduct(ProductId: Int): Flow<Stock> = appDao.getStockOfProduct(ProductId)
-
-    override fun getSupplierOfProduct(ProductId: Int): Flow<Supplier> = appDao.getSupplierOfProduct(ProductId)
-
-    override fun getAllProducts(): LiveData<List<Product>> = appDao.getAllProducts()
-
-    override suspend fun insertProduct(product: Product) = appDao.insertProduct(product)
-
-    override suspend fun deleteProduct(int: Int) = appDao.deleteProduct(int)
-
-
-
-}
-
 
  */
+
+class ProductRepoImp(private val appDao: AppDao){
+    fun getStockOfProduct(ProductId: Int): Flow<Stock> = appDao.getStockOfProduct(ProductId)
+
+    fun getSupplierOfProduct(ProductId: Int): Flow<Supplier> = appDao.getSupplierOfProduct(ProductId)
+
+    //fun getAllProducts(): Flow<Product> = appDao.getAllProducts()
+
+    suspend fun insertProduct(product: Product) = appDao.insertProduct(product)
+
+    //override suspend fun deleteProduct(int: Int) = appDao.deleteProduct()
+
+
+
+}
 
 
 /*

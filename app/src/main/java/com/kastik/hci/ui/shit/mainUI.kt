@@ -2,7 +2,6 @@ package com.kastik.hci.ui.shit
 
 import android.annotation.SuppressLint
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
@@ -13,7 +12,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountBox
@@ -41,6 +40,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -56,254 +56,162 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import androidx.room.Room
 import com.kastik.hci.database.AppDatabase
 import com.kastik.hci.database.Product
 import com.kastik.hci.ui.theme.HCI_ComposeTheme
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
-import kotlin.random.Random
 
 
-enum class Screens{
-    Main,
-    Local,
-    Remote
+enum class Screens {
+    Main, Local, Remote
 }
 
+
+@SuppressLint("CoroutineCreationDuringComposition")
 @OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun MyTopBar(scope:CoroutineScope,drawerState: DrawerState){
-    var expanded by remember { mutableStateOf(false) }
-    CenterAlignedTopAppBar(
-        title = {
-            Text(
-                "Centered TopAppBar",
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
-        },
-        navigationIcon = {
-            IconButton(onClick = {
-                scope.launch { drawerState.open() }
-            }) {
-                Icon(
-                    imageVector = Icons.Filled.Menu,
-                    contentDescription = "Localized description"
-                )
-            }
-        },
-        actions =   {
-            Box() {
-                IconButton(onClick = { expanded=true }) {
-                    Icon(Icons.Default.MoreVert, contentDescription = "Localized description")
-                }
-                DropdownMenu(
-                    expanded = expanded,
-                    onDismissRequest = { expanded=false }
-                ) {
-                    DropdownMenuItem(
-                        text = { Text("Insert") },
-                        onClick = { /* Handle edit! */ },
-                        leadingIcon = {
-                            Icon(
-                                Icons.Outlined.Add,
-                                contentDescription = null
-                            )
-                        })
-                    Divider()
-                    DropdownMenuItem(
-                        text = { Text("Edit") },
-                        onClick = { /* Handle settings! */ },
-                        leadingIcon = {
-                            Icon(
-                                Icons.Outlined.Edit,
-                                contentDescription = null
-                            )
-                        })
-                    Divider()
-                    DropdownMenuItem(
-                        text = { Text("Delete") },
-                        onClick = { /* Handle send feedback! */ },
-                        leadingIcon = {
-                            Icon(
-                                Icons.Outlined.Delete,
-                                contentDescription = null
-                            )
-                        },
-                        trailingIcon = { Text("F11", textAlign = TextAlign.Center) })
-                }
-            }
-
-
-        }
-    )
-}
-
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun DrawerSheet(navController: NavController){
-    var selected by remember {  mutableStateOf(1) }
-    ModalDrawerSheet {
-        Modifier.size(50.dp)
-        Text("Drawer title", modifier = Modifier.padding(16.dp))
-        Divider()
-        NavigationDrawerItem(
-            label = { Text(text = "Main") },
-            selected = selected==1,
-            onClick = {
-                navController.navigate(Screens.Main.name)
-                selected=1
-            }
-        )
-        Divider()
-        NavigationDrawerItem(
-            label = { Text(text = "Local") },
-            selected = selected==2,
-            onClick = {
-                navController.navigate(Screens.Local.name)
-                selected=2
-            }
-        )
-        Divider()
-        NavigationDrawerItem(
-            label = { Text(text = "Drawer Item") },
-            selected = selected==3,
-            onClick = {
-                navController.navigate(Screens.Remote.name)
-                selected=3
-                }
-        )
-    }
-}
-
-
-    @SuppressLint("CoroutineCreationDuringComposition")
-    @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 @Preview
 fun MainUI() {
-        val scope = rememberCoroutineScope()
-        val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
-        val navController = rememberNavController()
-        val db = Room
-            .databaseBuilder(LocalContext.current, AppDatabase::class.java, "Database.db")
-            .fallbackToDestructiveMigration()
-            .allowMainThreadQueries()
-            .build()
+    val scope = rememberCoroutineScope()
+    val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
+    val navController = rememberNavController()
 
-    HCI_ComposeTheme{
-        Surface{
-            ModalNavigationDrawer(
-                drawerState = drawerState,
+
+    HCI_ComposeTheme {
+        Surface {
+            ModalNavigationDrawer(drawerState = drawerState,
                 drawerContent = { DrawerSheet(navController) },
                 content = {
-                    Scaffold(
-                        topBar = {MyTopBar(scope = scope, drawerState = drawerState)},
-
-                    ){ paddingValues ->
-                        NavHost(navController =navController ,startDestination=Screens.Main.name ,Modifier.padding(paddingValues)){
-                            composable(Screens.Main.name){
+                    Scaffold(topBar = {
+                        MyTopBar(
+                            scope = scope, drawerState = drawerState
+                        )
+                    }) { paddingValues ->
+                        NavHost(
+                            navController = navController,
+                            startDestination = Screens.Main.name,
+                            Modifier.padding(paddingValues)
+                        ) {
+                            composable(Screens.Main.name) {
                                 scope.launch { drawerState.close() }
                                 MainActivityUI()
                             }
-                            composable(Screens.Local.name){
+                            composable(Screens.Local.name) {
                                 scope.launch { drawerState.close() }
                                 LocalActivityUI()
                             }
-                            composable(Screens.Remote.name){
+                            composable(Screens.Remote.name) {
                                 scope.launch { drawerState.close() }
                                 RemoteActivityUI()
                             }
                         }
                     }
-                }
-            )
+                })
 
         }
 
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MyCard(product: Product
-           //, onClick: () -> Unit
-) {
-            Card(
-                shape= MaterialTheme.shapes.large,
-                modifier= Modifier
-                    .padding(bottom = 2.dp, top = 2.dp)
-                    .fillMaxWidth()
-                    .height(IntrinsicSize.Min)
-                //shape = MaterialTheme.shapes.large,
-                //border = BorderStroke(2.dp,MaterialTheme.colorScheme.inversePrimary),
-                //elevation = CardDefaults.cardElevation(defaultElevation = 10.dp)
-            ) {
-                Row{
-                    Column(
-                        Modifier
-                            .weight(1f)
-                            .padding(5.dp)) {
-                        Text(text = product.productName)
-                        Spacer(modifier = Modifier.padding(5.dp))
-                        Text(text = product.productManufacturer.toString())
-                        Spacer(modifier = Modifier.padding(5.dp))
-                        Text(text = product.productDescription.toString())
-                    }
-
-                    Column(
-                        Modifier
-                            .weight(1f)
-                            .padding(5.dp)) {
-                        Text(text = "supplier.firstName.toString()")
-                        Spacer(modifier = Modifier.padding(5.dp))
-                        Text(text = "supplier.Location.toString()")
-                        Spacer(modifier = Modifier.padding(5.dp))
-                        Text(text = "supplier.lastName.toString()")
-                    }
-                    Column(
-                        Modifier
-                            .weight(1f)
-                            .padding(5.dp)) {
-                        Image(imageVector = Icons.Filled.AccountBox,contentDescription = null,
-                            Modifier
-                                .weight(2f)
-                                .fillMaxSize())
-                        Spacer(modifier = Modifier.padding(10.dp))
-                        Text(text = "Line2Col3",Modifier.weight(1f))
-                        //Spacer(modifier = Modifier.padding(5.dp))
-                    }
-                }
-
-            }
+fun DrawerSheet(navController: NavController) {
+    var selected by remember { mutableStateOf(1) }
+    ModalDrawerSheet {
+        Modifier.size(50.dp)
+        Text("Drawer title", modifier = Modifier.padding(16.dp))
+        Divider()
+        NavigationDrawerItem(label = { Text(text = "Main") }, selected = selected == 1, onClick = {
+            navController.navigate(Screens.Main.name)
+            selected = 1
+        })
+        Divider()
+        NavigationDrawerItem(label = { Text(text = "Local") }, selected = selected == 2, onClick = {
+            navController.navigate(Screens.Local.name)
+            selected = 2
+        })
+        Divider()
+        NavigationDrawerItem(label = { Text(text = "Drawer Item") },
+            selected = selected == 3,
+            onClick = {
+                navController.navigate(Screens.Remote.name)
+                selected = 3
+            })
+    }
 }
 
-
-
-
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun MyTopBar(scope: CoroutineScope, drawerState: DrawerState) {
+    CenterAlignedTopAppBar(title = {
+        Text(
+            "Centered TopAppBar", maxLines = 1, overflow = TextOverflow.Ellipsis
+        )
+    }, navigationIcon = {
+        IconButton(onClick = {
+            scope.launch { drawerState.open() }
+        }) {
+            Icon(
+                imageVector = Icons.Filled.Menu, contentDescription = "Localized description"
+            )
+        }
+    }, actions = {
+        DropDownMenu()
+    })
+}
 
 @Composable
 //TODO
-fun BottomNav(){
-    HCI_ComposeTheme{
-        Surface{
-            //MyCard(data =) {
-
-            }
-
-        }
-
-    }
-
-@Composable
-fun MainActivityUI() {
-
-
-
+fun BottomNav() {
 
 }
 
+
+@Composable
+fun DropDownMenu() {
+    val db = AppDatabase.getDatabase(LocalContext.current)
+    var expanded by remember { mutableStateOf(false) }
+    IconButton(onClick = { expanded = true }) {
+        Icon(Icons.Default.MoreVert, contentDescription = "Localized description")
+    }
+    DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+        DropdownMenuItem(text = { Text("Insert") }, onClick = {
+            db.AppDao().insertProduct(
+                Product(
+                    1, "asdasdad", "asdasd", 1, "kaka"
+                )
+            )
+        }, leadingIcon = {
+            Icon(
+                Icons.Outlined.Add, contentDescription = null
+            )
+        })
+        Divider()
+        DropdownMenuItem(text = { Text("Edit") },
+            onClick = { /* Handle settings! */ },
+            leadingIcon = {
+                Icon(
+                    Icons.Outlined.Edit, contentDescription = null
+                )
+            })
+        Divider()
+        DropdownMenuItem(text = { Text("Delete") },
+            onClick = { /* Handle send feedback! */ },
+            leadingIcon = {
+                Icon(
+                    Icons.Outlined.Delete, contentDescription = null
+                )
+            },
+            trailingIcon = { Text("F11", textAlign = TextAlign.Center) })
+    }
+}
+
+@Composable
+fun MainActivityUI() {
+    Text(text = "Hi")
+
+}
 
 
 @Composable
@@ -312,25 +220,24 @@ fun LocalActivityUI() {
     val lazyListState = rememberLazyListState()
 
 
-    //val datalist = myDatabase.AppDao().getAllProducts()
-    val datalist = listOf<Product>(
-        Product(Random.nextInt(),java.util.UUID.randomUUID().toString(),java.util.UUID.randomUUID().toString(), Random.nextInt(),java.util.UUID.randomUUID().toString()),
-        Product(Random.nextInt(),java.util.UUID.randomUUID().toString(),java.util.UUID.randomUUID().toString(), Random.nextInt(),java.util.UUID.randomUUID().toString()),
-        Product(Random.nextInt(),java.util.UUID.randomUUID().toString(),java.util.UUID.randomUUID().toString(), Random.nextInt(),java.util.UUID.randomUUID().toString()),
-        Product(Random.nextInt(),java.util.UUID.randomUUID().toString(),java.util.UUID.randomUUID().toString(), Random.nextInt(),java.util.UUID.randomUUID().toString())
-    )
+    val db = AppDatabase.getDatabase(LocalContext.current)
+    //val mdata = remember { mutableListOf(db.AppDao().getAllProducts()) }
+    val mdata = db.AppDao().getAllProducts().collectAsState(initial = emptyList())
+    //val products = remember { mutableStateOf<Product>(db.AppDao().getAllProducts()) }
+    //val scope = rememberCoroutineScope()
+    //CoroutineScope(scope.coroutineContext).apply {}
 
+    /*
+        val datalist = AppDatabase.getDatabase(LocalContext.current).AppDao().getAllProducts()
 
-/*
-    val datalist = AppDatabase.getDatabase(LocalContext.current).AppDao().getAllProducts()
+     */
+    LazyColumn(Modifier.fillMaxSize()) {
+        itemsIndexed(mdata.value){index, item ->
+        MyCard(product = item)
 
- */
-    LazyColumn (Modifier.fillMaxSize()){
-        items(datalist){data ->
-            MyCard(product = data)
-        }
         }
     }
+}
 
 
 @Composable
@@ -338,4 +245,66 @@ fun RemoteActivityUI() {
 
     Text(text = "Remote Activity stuff")
 
+}
+
+
+@Composable
+fun MyCard(
+    product: Product
+    //, onClick: () -> Unit
+) {
+    Card(
+        
+        shape = MaterialTheme.shapes.large,
+        modifier = Modifier
+            .padding(bottom = 2.dp, top = 2.dp)
+            .fillMaxWidth()
+            .height(IntrinsicSize.Min)
+        //shape = MaterialTheme.shapes.large,
+        //border = BorderStroke(2.dp,MaterialTheme.colorScheme.inversePrimary),
+        //elevation = CardDefaults.cardElevation(defaultElevation = 10.dp)
+    ) {
+        Row {
+            Column(
+                Modifier
+                    .weight(1f)
+                    .padding(5.dp)
+            ) {
+                Text(text = product.productName)
+                Spacer(modifier = Modifier.padding(5.dp))
+                Text(text = product.productManufacturer.toString())
+                Spacer(modifier = Modifier.padding(5.dp))
+                Text(text = product.productDescription.toString())
+            }
+
+            Column(
+                Modifier
+                    .weight(1f)
+                    .padding(5.dp)
+            ) {
+                Text(text = "supplier.firstName.toString()")
+                Spacer(modifier = Modifier.padding(5.dp))
+                Text(text = "supplier.Location.toString()")
+                Spacer(modifier = Modifier.padding(5.dp))
+                Text(text = "supplier.lastName.toString()")
+            }
+            Column(
+                Modifier
+                    .weight(1f)
+                    .padding(5.dp)
+            ) {
+                Image(
+                    imageVector = Icons.Filled.AccountBox,
+                    contentDescription = null,
+                    Modifier
+                        .weight(2f)
+                        .fillMaxSize()
+                )
+                Spacer(modifier = Modifier.padding(10.dp))
+                Text(text = "Line2Col3", Modifier.weight(1f))
+                //Spacer(modifier = Modifier.padding(5.dp))
+            }
+        }
+
+    }
 }

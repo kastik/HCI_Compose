@@ -64,11 +64,9 @@ fun HCI_ComposeTheme(
     }
 
     MaterialTheme(
-      colorScheme = colorScheme,
-      typography = Typography,
-      content = content,
-        shapes = MaterialTheme.shapes.copy(extraSmall = RoundedCornerShape(16.dp))
-
-
+        colorScheme = colorScheme,
+        typography = Typography,
+        content = content,
+        shapes = MaterialTheme.shapes.copy(extraSmall = RoundedCornerShape(16.dp)) //TODO find way to directly modify dropdown
     )
 }
