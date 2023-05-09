@@ -17,6 +17,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountBox
 import androidx.compose.material.icons.filled.Menu
@@ -54,12 +55,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.CenterHorizontally
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
@@ -85,39 +86,42 @@ enum class Screens {
     Local,
     Remote,
     InsertProduct,
-    InsertSupplier
 }
 
 
 //@SuppressLint("CoroutineCreationDuringComposition")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-//@Preview
+@Preview
 fun MainUI() {
     val scope = rememberCoroutineScope()
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val navController = rememberNavController()
-    val topBarState = rememberSaveable { (mutableStateOf(true)) }
+    val topBarState = remember { (mutableStateOf(true)) }
+    val selectedItem = remember { mutableStateOf(1) }
+    val dropDownState = remember { mutableStateOf(false) }
     HCI_ComposeTheme {
         Surface {
             ModalNavigationDrawer(drawerState = drawerState,
-                drawerContent = { DrawerSheet(navController) },
+                drawerContent = { DrawerSheet(navController,selectedItem) },
                 content = {
-                    Scaffold(topBar = {
-                        MyTopBar(
-                            scope = scope, drawerState = drawerState, navController = navController,topBarState,
-                        )
-                    }) { paddingValues ->
+                    Scaffold(
+                        topBar = {
+                        MyTopBar(scope = scope, drawerState = drawerState, navController = navController,topBarState= topBarState,dropDownState)
+                        }
+                    ){ paddingValues ->
                         NavHost(
                             navController = navController,
                             startDestination = Screens.Main.name,
                             Modifier.padding(paddingValues)
-                        ) {
+                        ){
                             composable(Screens.Main.name) {
                                 LaunchedEffect(drawerState) {
                                     drawerState.close()
                                 }
                                 topBarState.value = true
+                                selectedItem.value = 1
+                                dropDownState.value = false
                                 MainActivityUI()
                             }
                             composable(Screens.Local.name) {
@@ -125,6 +129,8 @@ fun MainUI() {
                                     drawerState.close()
                                 }
                                 topBarState.value = true
+                                selectedItem.value = 2
+                                dropDownState.value = true
                                 LocalActivityUI()
                             }
                             composable(Screens.Remote.name) {
@@ -132,6 +138,8 @@ fun MainUI() {
                                     drawerState.close()
                                 }
                                 topBarState.value = true
+                                selectedItem.value = 3
+                                dropDownState.value = true
                                 RemoteActivityUI()
                             }
                             composable(Screens.InsertProduct.name) {
@@ -141,9 +149,7 @@ fun MainUI() {
                         }
                     }
                 })
-
         }
-
     }
 }
 
@@ -151,15 +157,19 @@ fun MainUI() {
 @Composable
 @Preview
 fun InsertProductUI() {
+    val database = AppDatabase.getDatabase(LocalContext.current).AppDao()
+
+    var supplierName by remember { mutableStateOf("") }
+    var supplierLocation by remember { mutableStateOf("") }
+
     var productName by remember { mutableStateOf("") }
     var manufacturer by remember { mutableStateOf("") }
     var price by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
     var stock by remember { mutableStateOf("") }
-    var supplierName by remember { mutableStateOf("") }
-    var supplierLocation by remember { mutableStateOf("") }
+
     var expanded by remember { mutableStateOf(false) }
-    val database = AppDatabase.getDatabase(LocalContext.current).AppDao()
+
     val supplierNames = database.getSupplierNames().collectAsState(initial = emptyList())
     var selectedText by remember { mutableStateOf("Insert A Supplier First") }
 
@@ -250,8 +260,13 @@ fun InsertProductUI() {
                                     .fillMaxWidth()
                                     .padding(10.dp),
                                 value = price,
-                                onValueChange = { price = it },
-                                label = { Text("Price") }
+                                onValueChange =
+                                {
+                                    if(it.isEmpty() || it.matches(Regex("^\\d+\$"))) {
+                                    price = it }
+                                },
+                                label = { Text("Price") },
+                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
                             )
                             Spacer(modifier = Modifier.padding(10.dp))
                             OutlinedTextField(
@@ -313,8 +328,13 @@ fun InsertProductUI() {
                                     .fillMaxWidth()
                                     .padding(10.dp),
                                 value = stock,
-                                onValueChange = { stock = it },
-                                label = { Text("Quantity") }
+                                onValueChange =
+                                {
+                                    if(it.isEmpty() || it.matches(Regex("^\\d+\$"))) {
+                                        stock = it }
+                                },
+                                label = { Text("Quantity") },
+                                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
                             )
                             FilledTonalButton(
                                 modifier = Modifier
@@ -336,104 +356,106 @@ fun InsertProductUI() {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DrawerSheet(navController: NavController) {
-    var selected by remember { mutableStateOf(1) }
-    ModalDrawerSheet {
+fun DrawerSheet(navController: NavController, selectedItem: MutableState<Int>){
+    ModalDrawerSheet{
         Modifier.size(50.dp)
         Text("Drawer title", modifier = Modifier.padding(16.dp))
         Divider()
-        NavigationDrawerItem(label = { Text(text = "Main") }, selected = selected == 1, onClick = {
-            navController.navigate(Screens.Main.name)
-            selected = 1
+        NavigationDrawerItem(label = { Text(text = "Main") }, selected = selectedItem.value == 1, onClick = {
+            navController.navigate(Screens.Main.name) {
+                popUpTo(Screens.Main.name)
+                launchSingleTop = true
+            }
         })
         Divider()
-        NavigationDrawerItem(label = { Text(text = "Local") }, selected = selected == 2, onClick = {
-            navController.navigate(Screens.Local.name)
-            selected = 2
+        NavigationDrawerItem(label = { Text(text = "Local") }, selected = selectedItem.value == 2, onClick = {
+            navController.navigate(Screens.Local.name){
+                popUpTo(Screens.Main.name)
+                launchSingleTop = true
+            }
         })
         Divider()
-        NavigationDrawerItem(label = { Text(text = "Drawer Item") },
-            selected = selected == 3,
-            onClick = {
-                navController.navigate(Screens.Remote.name)
-                selected = 3
+        NavigationDrawerItem(label = { Text(text = "Drawer Item") }, selected = selectedItem.value == 3, onClick = {
+                navController.navigate(Screens.Remote.name){
+                    popUpTo(Screens.Main.name)
+                    launchSingleTop = true
+                }
             })
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MyTopBar(scope: CoroutineScope, drawerState: DrawerState, navController: NavController,topBarState: MutableState<Boolean>) {
-    AnimatedVisibility(visible = topBarState.value) {
-        CenterAlignedTopAppBar(title = {
-            Text(
-                "Centered TopAppBar", maxLines = 1, overflow = TextOverflow.Ellipsis
-            )
-        }, navigationIcon = {
-            IconButton(onClick = {
-                scope.launch { drawerState.open() }
-            }) {
+fun MyTopBar(scope: CoroutineScope, drawerState: DrawerState, navController: NavController,topBarState: MutableState<Boolean>,dropDownState: MutableState<Boolean>) {
+    AnimatedVisibility(visible = topBarState.value){
+        CenterAlignedTopAppBar(
+            title = {
+                Text("Centered TopAppBar", maxLines = 1, overflow = TextOverflow.Ellipsis
+            )},
+            navigationIcon = {
+                IconButton(
+                    onClick = {
+                        scope.launch { drawerState.open() } }) {
                 Icon(
-                    imageVector = Icons.Filled.Menu, contentDescription = "Localized description"
-                )
-            }
-        }, actions = {
-            DropDownMenu(navController)
-        })
-    }
-
-}
-
-@Composable
-//TODO
-fun BottomNav() {
-
-}
-
-
-@Composable
-fun DropDownMenu(navController: NavController) {
-    val db = AppDatabase.getDatabase(LocalContext.current)
-    var expanded by remember { mutableStateOf(false) }
-    IconButton(
-        onClick = { expanded = true }) {
-        Icon(Icons.Default.MoreVert, contentDescription = "Localized description")
-    }
-    DropdownMenu(
-        expanded = expanded,
-        onDismissRequest = { expanded = false },
-        modifier = Modifier.wrapContentSize()) {
-        DropdownMenuItem(text = { Text("Insert") }, onClick = {
-            expanded = false
-            //db.AppDao().insertProduct(Product(Random.nextInt(), "asdasdad", "asdasd", 1, "kaka"))
-            navController.navigate(Screens.InsertProduct.name)
-        }, leadingIcon = {
-            Icon(
-                Icons.Outlined.Add, contentDescription = null
-            )
-        })
-        Divider()
-        DropdownMenuItem(text = { Text("Edit") },
-            onClick = {
-                expanded = false
-            },
-            leadingIcon = {
-                Icon(
-                    Icons.Outlined.Edit, contentDescription = null
-                )
+                    imageVector = Icons.Filled.Menu, contentDescription = "Localized description")
+                } },
+            actions = {
+            DropDownMenu(navController,dropDownState)
             })
-        Divider()
-        DropdownMenuItem(text = { Text("Delete") },
-            onClick = {
-                expanded = false
-            },
-            leadingIcon = {
-                Icon(
-                    Icons.Outlined.Delete, contentDescription = null
-                )
-            },
-            trailingIcon = { Text("F11", textAlign = TextAlign.Center) })
     }
+}
+
+
+@Composable
+fun DropDownMenu(navController: NavController,dropDownState: MutableState<Boolean>) {
+    var expanded by remember { mutableStateOf(false) }
+
+    AnimatedVisibility(visible = dropDownState.value) {
+        IconButton(
+            onClick = {
+                expanded = true
+            }){
+            Icon(Icons.Default.MoreVert, contentDescription = "Localized description")
+        }
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false },
+            modifier = Modifier.wrapContentSize()) {
+            DropdownMenuItem(
+                text = { Text("Insert") }, onClick = {
+                    expanded = false
+                    //db.AppDao().insertProduct(Product(Random.nextInt(), "asdasdad", "asdasd", 1, "kaka"))
+                    navController.navigate(Screens.InsertProduct.name)
+                }, leadingIcon = {
+                    Icon(
+                        Icons.Outlined.Add, contentDescription = null
+                    )
+                })
+            Divider()
+            DropdownMenuItem(text = { Text("Edit") },
+                onClick = {
+                    expanded = false
+                },
+                leadingIcon = {
+                    Icon(
+                        Icons.Outlined.Edit, contentDescription = null
+                    )
+                })
+            Divider()
+            DropdownMenuItem(text = { Text("Delete") },
+                onClick = {
+                    expanded = false
+                },
+                leadingIcon = {
+                    Icon(
+                        Icons.Outlined.Delete, contentDescription = null
+                    )
+                },
+                trailingIcon = { Text("F11", textAlign = TextAlign.Center) })
+        }
+
+    }
+
 }
 
 @Composable
@@ -468,9 +490,8 @@ fun MyCard(
     product: Product
 
     //,onClick: () -> Unit
-) {
+    ){
     var expand = remember { false }
-    var text = remember { "kostas" }
     Card(
         shape = MaterialTheme.shapes.large,
         modifier = Modifier
@@ -490,12 +511,7 @@ fun MyCard(
                     .weight(1f)
                     .padding(5.dp)
             ) {
-                if (!expand) {
-                    text = "kastik"
-                } else {
-                    text = "kostas"
-                }
-                Text(text = text)
+                Text(text = product.productName)
                 Text(text = product.productName)
                 Spacer(modifier = Modifier.padding(5.dp))
                 Text(text = product.productManufacturer.toString())
