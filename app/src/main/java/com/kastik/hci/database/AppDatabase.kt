@@ -1,7 +1,6 @@
 package com.kastik.hci.database
 
 import android.content.Context
-import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Database
 import androidx.room.Delete
@@ -30,7 +29,7 @@ abstract class AppDatabase : RoomDatabase() {
                         AppDatabase::class.java,
                         "Database.db"
                     )
-                        //.fallbackToDestructiveMigration()
+                        .fallbackToDestructiveMigration()
                         .allowMainThreadQueries() //TODO Remove at some point
                         .build()
 
@@ -46,56 +45,73 @@ abstract class AppDatabase : RoomDatabase() {
 //TableName = ClassName of entities if not specified
 //ColumnInfo = var name if not specified
 //TODO onDelete = ForeignKey.CASCADE
+
+
+
 @Entity
+data class Supplier(
+    @PrimaryKey(autoGenerate = true)
+    val SupplierId: Int,
+    val Name: String?,
+    val Location: String?
+)
+
+@Entity(foreignKeys = [ForeignKey(entity = Supplier::class, childColumns = ["SupplierId"], parentColumns = ["SupplierId"]),
+    ForeignKey(entity = Stock::class, childColumns = ["StockId"], parentColumns = ["StockId"])])
 data class Product(
     @PrimaryKey(autoGenerate = true) val ProductId: Int,
     val productName: String,
     val productManufacturer: String?,
     val productPrice: Int,
-    val productDescription: String?
-
-)
-
-@Entity(foreignKeys = [ForeignKey(entity = Product::class, childColumns = ["ProductId"], parentColumns = ["ProductId"])])
-data class Stock(
-    @PrimaryKey
-    val ProductId: Int,
-    val localStock: Int,
-    val warehouseStock: Int,
-    val totalStock: Int = warehouseStock+localStock
-)
-
-@Entity(foreignKeys = [ForeignKey(entity = Product::class, childColumns = ["ProductId"], parentColumns = ["ProductId"])])
-data class Supplier(
-    @PrimaryKey
+    val productDescription: String?,
     val SupplierId: Int,
-    val ProductId: Int,
-    val firstName: String?,
-    val lastName: String?,
-    val Location: String?
+    val StockId: Int
 )
+
+@Entity
+data class Stock(
+    @PrimaryKey(autoGenerate = true)
+    val StockId: Int,
+    val Stock: Int
+)
+
 /* TODO Add susped to Dao Funs */
 //TODO Add @Update fun
 
 @Dao
 interface AppDao {
-    @Query("SELECT * FROM Stock WHERE ProductId==:ProductId")
-    fun getStockOfProduct(ProductId: Int): Flow<Stock>
-
-    @Query("SELECT * FROM SUPPLIER WHERE ProductId==:ProductId")
-    fun getSupplierOfProduct(ProductId: Int): Flow<Supplier>
+    @Insert
+    fun insertSupplier(supplier: Supplier)
+    @Insert
+    fun insertStock(stock: Stock)
+    @Insert
+    fun insertProduct(product: Product)
 
     @Query("SELECT * FROM PRODUCT")
     fun getAllProducts(): Flow<List<Product>>
 
-    @Insert
-    fun insertProduct(product: Product)
+    @Query("SELECT * FROM Supplier.Name")
+    fun getSupplierNames(): Flow<List<String>>
+
+    @Query("SELECT * FROM Supplier LEFT JOIN Product ON Supplier.SupplierId==Product.SupplierId AND Product.ProductId==:productId")
+    fun getSupplierOfProduct(productId: Int): Flow<Supplier>
+
+    @Query("SELECT * FROM Stock LEFT JOIN PRODUCT ON Stock.StockId==Product.StockId AND Product.ProductId==:productId")
+    fun getStockOfProduct(productId: Int): Flow<Stock>
+
+    /*@Query("SELECT * FROM SUPPLIER WHERE ProductId==:ProductId")
+    fun getSupplierOfProduct(ProductId: Int): Flow<List<Supplier>>
+
+
+
+
+     */
+
+
+
 
     @Delete
     fun deleteProduct(product: Product)
-
-    @Query("SELECT COUNT(ProductId) FROM Product")
-    fun getDataCount(): LiveData<Int?>
 
     //TODO Add @Update fun
     //TODO ADD suspend fun on UPDATE DELETE AND MODIFY
