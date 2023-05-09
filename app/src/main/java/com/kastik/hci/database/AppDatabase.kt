@@ -90,14 +90,14 @@ interface AppDao {
     @Query("SELECT * FROM PRODUCT")
     fun getAllProducts(): Flow<List<Product>>
 
-    @Query("SELECT * FROM Supplier.Name")
-    fun getSupplierNames(): Flow<List<String>>
+   @Query("SELECT Supplier.Name FROM Supplier")
+   fun getSupplierNames(): Flow<List<String>>
 
-    @Query("SELECT * FROM Supplier LEFT JOIN Product ON Supplier.SupplierId==Product.SupplierId AND Product.ProductId==:productId")
-    fun getSupplierOfProduct(productId: Int): Flow<Supplier>
+    //@Query("SELECT * FROM Supplier LEFT JOIN Product ON Supplier.SupplierId==Product.SupplierId AND Product.ProductId==:productId")
+    //fun getSupplierOfProduct(productId: Int): Flow<Supplier>
 
-    @Query("SELECT * FROM Stock LEFT JOIN PRODUCT ON Stock.StockId==Product.StockId AND Product.ProductId==:productId")
-    fun getStockOfProduct(productId: Int): Flow<Stock>
+    //@Query("SELECT * FROM Stock LEFT JOIN PRODUCT ON Stock.StockId==Product.StockId AND Product.ProductId==:productId")
+    //fun getStockOfProduct(productId: Int): Flow<Stock>
 
     /*@Query("SELECT * FROM SUPPLIER WHERE ProductId==:ProductId")
     fun getSupplierOfProduct(ProductId: Int): Flow<List<Supplier>>

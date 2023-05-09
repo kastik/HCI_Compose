@@ -1,6 +1,5 @@
 package com.kastik.hci.ui.mainComponents
 
-import android.annotation.SuppressLint
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
@@ -48,6 +47,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -72,6 +72,7 @@ import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import com.kastik.hci.database.AppDatabase
 import com.kastik.hci.database.Product
+import com.kastik.hci.database.Stock
 import com.kastik.hci.database.Supplier
 import com.kastik.hci.ui.theme.HCI_ComposeTheme
 import kotlinx.coroutines.CoroutineScope
@@ -88,7 +89,7 @@ enum class Screens {
 }
 
 
-@SuppressLint("CoroutineCreationDuringComposition")
+//@SuppressLint("CoroutineCreationDuringComposition")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 //@Preview
@@ -97,8 +98,6 @@ fun MainUI() {
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val navController = rememberNavController()
     val topBarState = rememberSaveable { (mutableStateOf(true)) }
-
-
     HCI_ComposeTheme {
         Surface {
             ModalNavigationDrawer(drawerState = drawerState,
@@ -115,17 +114,23 @@ fun MainUI() {
                             Modifier.padding(paddingValues)
                         ) {
                             composable(Screens.Main.name) {
-                                scope.launch { drawerState.close() }
+                                LaunchedEffect(drawerState) {
+                                    drawerState.close()
+                                }
                                 topBarState.value = true
                                 MainActivityUI()
                             }
                             composable(Screens.Local.name) {
-                                scope.launch { drawerState.close() }
+                                LaunchedEffect(drawerState) {
+                                    drawerState.close()
+                                }
                                 topBarState.value = true
                                 LocalActivityUI()
                             }
                             composable(Screens.Remote.name) {
-                                scope.launch { drawerState.close() }
+                                LaunchedEffect(drawerState) {
+                                    drawerState.close()
+                                }
                                 topBarState.value = true
                                 RemoteActivityUI()
                             }
@@ -155,8 +160,8 @@ fun InsertProductUI() {
     var supplierLocation by remember { mutableStateOf("") }
     var expanded by remember { mutableStateOf(false) }
     val database = AppDatabase.getDatabase(LocalContext.current).AppDao()
-    val supplierNames = mutableListOf(database.getSupplierNames())
-    var selectedText by remember { mutableStateOf(supplierNames[0]) }
+    val supplierNames = database.getSupplierNames().collectAsState(initial = emptyList())
+    var selectedText by remember { mutableStateOf("Insert A Supplier First") }
 
 
     HCI_ComposeTheme() {
@@ -206,6 +211,8 @@ fun InsertProductUI() {
                                         Random.nextInt(),
                                         supplierName,supplierLocation
                                     ))
+                                    supplierName = ""
+                                    supplierLocation = ""
                                 }) { Text("Insert") }
 
                             Text(
@@ -283,9 +290,11 @@ fun InsertProductUI() {
 
                                 ExposedDropdownMenu(
                                     expanded = expanded,
-                                    onDismissRequest = { expanded = false }
+                                    onDismissRequest = {
+                                        expanded = false
+                                    }
                                 ) {
-                                    supplierNames.forEach { item ->
+                                    supplierNames.value.forEach { item ->
                                         DropdownMenuItem(
                                             text = { Text(text = item) },
                                             onClick = {
@@ -311,7 +320,12 @@ fun InsertProductUI() {
                                 modifier = Modifier
                                     .align(Alignment.End)
                                     .padding(10.dp),
-                                onClick = { /* Do something! */ }) { Text("Insert") }
+                                onClick = {
+                                    database.insertStock(Stock(12,12))
+                                    database.insertProduct(Product(
+                                        Random.nextInt(),productName, manufacturer,price.toInt(),description,697620083,12
+                                    ))
+                                }) { Text("Insert") }
                         }
                 }
             }
