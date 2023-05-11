@@ -20,7 +20,7 @@ abstract class AppDatabase : RoomDatabase() {
     companion object{
         private var INSTANCE:AppDatabase? = null
 
-        fun getDatabase(context:Context):AppDatabase{
+        fun getDatabase(context: Context):AppDatabase{
             synchronized(this){
                 var instance = INSTANCE
                 if (instance == null) {
@@ -51,27 +51,28 @@ abstract class AppDatabase : RoomDatabase() {
 @Entity
 data class Supplier(
     @PrimaryKey(autoGenerate = true)
-    val SupplierId: Int,
-    val Name: String?,
-    val Location: String?
+    val SupplierId: Int = 0,
+    val Name: String,
+    val Location: String
 )
 
-@Entity(foreignKeys = [ForeignKey(entity = Supplier::class, childColumns = ["SupplierId"], parentColumns = ["SupplierId"]),
-    ForeignKey(entity = Stock::class, childColumns = ["StockId"], parentColumns = ["StockId"])])
+@Entity(foreignKeys = [ForeignKey(entity = Supplier::class, childColumns = ["SupplierId"], parentColumns = ["SupplierId"]),ForeignKey(entity = Supplier::class, childColumns = ["SupplierId"], parentColumns = ["SupplierId"])])
 data class Product(
-    @PrimaryKey(autoGenerate = true) val ProductId: Int,
-    val productName: String,
-    val productManufacturer: String?,
-    val productPrice: Int,
-    val productDescription: String?,
-    val SupplierId: Int,
-    val StockId: Int
+    @PrimaryKey(autoGenerate = true)
+    val ProductId: Int = 0,
+    val SupplierId: Int = 0,
+    val StockId: Int = 0,
+    val ProductName: String,
+    val ProductManufacturer: String,
+    val ProductPrice: Int,
+    val ProductDescription: String
+
 )
 
 @Entity
 data class Stock(
     @PrimaryKey(autoGenerate = true)
-    val StockId: Int,
+    val StockId: Int = 0,
     val Stock: Int
 )
 
@@ -83,15 +84,27 @@ interface AppDao {
     @Insert
     fun insertSupplier(supplier: Supplier)
     @Insert
-    fun insertStock(stock: Stock)
+    fun insertStock(stock: Stock) : Long
     @Insert
-    fun insertProduct(product: Product)
+    fun insertProduct(product: Product) : Long
 
     @Query("SELECT * FROM PRODUCT")
     fun getAllProducts(): Flow<List<Product>>
 
+    @Query("SELECT * FROM Supplier")
+    fun getAllSuppliers(): Flow<List<Supplier>>
+    @Query("SELECT * FROM Stock")
+    fun getAllStocks(): Flow<List<Stock>>
+
    @Query("SELECT Supplier.Name FROM Supplier")
    fun getSupplierNames(): Flow<List<String>>
+
+   @Query("SELECT * FROM Supplier WHERE :supplierId==Supplier.SupplierId")
+   fun getSupplierInfo(supplierId: Int): Supplier
+
+   @Query("SELECT * FROM Stock WHERE :stockId==Stock.Stockid")
+   fun getStockOfProduct(stockId: Int): Stock
+
 
     //@Query("SELECT * FROM Supplier LEFT JOIN Product ON Supplier.SupplierId==Product.SupplierId AND Product.ProductId==:productId")
     //fun getSupplierOfProduct(productId: Int): Flow<Supplier>
@@ -102,13 +115,7 @@ interface AppDao {
     /*@Query("SELECT * FROM SUPPLIER WHERE ProductId==:ProductId")
     fun getSupplierOfProduct(ProductId: Int): Flow<List<Supplier>>
 
-
-
-
      */
-
-
-
 
     @Delete
     fun deleteProduct(product: Product)

@@ -47,22 +47,24 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.kastik.hci.database.AppDatabase
 import com.kastik.hci.database.Product
+import com.kastik.hci.database.Stock
+import com.kastik.hci.database.Supplier
 import com.kastik.hci.ui.theme.HCI_ComposeTheme
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-@Preview
 fun MainUI() {
     val scope = rememberCoroutineScope()
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
@@ -70,10 +72,13 @@ fun MainUI() {
     val topBarState = remember { (mutableStateOf(true)) }
     val selectedItem = remember { mutableStateOf(1) }
     val dropDownState = remember { mutableStateOf(false) }
+    val drawerGestureEnabled = remember { mutableStateOf(true) }
     HCI_ComposeTheme {
         Surface {
-            ModalNavigationDrawer(drawerState = drawerState,
+            ModalNavigationDrawer(
+                drawerState = drawerState,
                 drawerContent = { DrawerSheet(navController,selectedItem) },
+                gesturesEnabled= drawerGestureEnabled.value,
                 content = {
                     Scaffold(
                         topBar = {
@@ -92,6 +97,7 @@ fun MainUI() {
                                 topBarState.value = true
                                 selectedItem.value = 1
                                 dropDownState.value = false
+                                drawerGestureEnabled.value = true
                                 MainScreen()
                             }
                             composable(Screens.LocalDatabaseScreen.name) {
@@ -101,6 +107,7 @@ fun MainUI() {
                                 topBarState.value = true
                                 selectedItem.value = 2
                                 dropDownState.value = true
+                                drawerGestureEnabled.value = true
                                 LocalDatabaseScreen()
                             }
                             composable(Screens.RemoteDatabaseScreen.name) {
@@ -110,10 +117,12 @@ fun MainUI() {
                                 topBarState.value = true
                                 selectedItem.value = 3
                                 dropDownState.value = true
+                                drawerGestureEnabled.value = true
                                 RemoteDatabaseScreen()
                             }
                             composable(Screens.InsertProducScreen.name) {
                                 topBarState.value = false
+                                drawerGestureEnabled.value = false
                                 InsertProducScreen()
                             }
                         }
@@ -232,17 +241,19 @@ fun DropDownMenu(navController: NavController,dropDownState: MutableState<Boolea
 
 
 @Composable
-fun MyCard(
-    product: Product
-
+fun LocalDatabaseCard(
+    product: Product,
+    stock: Stock,
+    supplier: Supplier
     //,onClick: () -> Unit
-    ){
-    var expand = remember { false }
+){
+    val database = AppDatabase.getDatabase(LocalContext.current).AppDao()
+    var expand =  remember { false }
     Card(
         shape = MaterialTheme.shapes.large,
         modifier = Modifier
-            .padding(bottom = 2.dp, top = 2.dp)
             .fillMaxWidth()
+            .padding(10.dp)
             .height(IntrinsicSize.Min)
             .clickable(onClick = {
                 expand = !expand
@@ -257,12 +268,14 @@ fun MyCard(
                     .weight(1f)
                     .padding(5.dp)
             ) {
-                Text(text = product.productName)
-                Text(text = product.productName)
+                Text(text = product.ProductName)
                 Spacer(modifier = Modifier.padding(5.dp))
-                Text(text = product.productManufacturer.toString())
+                Text(text = product.ProductManufacturer.toString())
                 Spacer(modifier = Modifier.padding(5.dp))
-                Text(text = product.productDescription.toString())
+                Text(text = product.ProductDescription.toString())
+                Spacer(modifier = Modifier.padding(5.dp))
+                Text(text = stock.Stock.toString())
+
             }
 
             Column(
@@ -270,11 +283,76 @@ fun MyCard(
                     .weight(1f)
                     .padding(5.dp)
             ) {
-                Text(text = "supplier.firstName.toString()")
+                Text(text = supplier.Name)
                 Spacer(modifier = Modifier.padding(5.dp))
-                Text(text = "supplier.Location.toString()")
+                Text(text = supplier.Location)
                 Spacer(modifier = Modifier.padding(5.dp))
-                Text(text = "supplier.lastName.toString()")
+            }
+            Column(
+                Modifier
+                    .weight(1f)
+                    .padding(5.dp)
+            ) {
+                Image(
+                    imageVector = Icons.Filled.AccountBox,
+                    contentDescription = null,
+                    Modifier
+                        .weight(2f)
+                        .fillMaxSize()
+                )
+                Spacer(modifier = Modifier.padding(10.dp))
+                Text(text = "Line2Col3", Modifier.weight(1f))
+                //Spacer(modifier = Modifier.padding(5.dp))
+            }
+        }
+
+    }
+}
+
+
+@Composable
+fun RemoteDatabaseCard(
+    product: Product
+
+    //,onClick: () -> Unit
+){
+    var expand = remember { false }
+    Card(
+        shape = MaterialTheme.shapes.large,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(10.dp)
+            .height(IntrinsicSize.Min)
+            .clickable(onClick = {
+                expand = !expand
+            })
+        //shape = MaterialTheme.shapes.large,
+        //border = BorderStroke(2.dp,MaterialTheme.colorScheme.inversePrimary),
+        //elevation = CardDefaults.cardElevation(defaultElevation = 10.dp)
+    ) {
+        Row {
+            Column(
+                Modifier
+                    .weight(1f)
+                    .padding(5.dp)
+            ) {
+                Text(text = product.ProductName)
+                //Text(text = dataWrapper.product.productName)
+                Spacer(modifier = Modifier.padding(5.dp))
+                //Text(text = dataWrapper.product.productManufacturer.toString())
+                Spacer(modifier = Modifier.padding(5.dp))
+                //Text(text = dataWrapper.product.productDescription.toString())
+            }
+
+            Column(
+                Modifier
+                    .weight(1f)
+                    .padding(5.dp)
+            ) {
+                //Text(text = dataWrapper.supplier.Name.toString())
+                Spacer(modifier = Modifier.padding(5.dp))
+                //Text(text = dataWrapper.supplier.Location.toString())
+                Spacer(modifier = Modifier.padding(5.dp))
             }
             Column(
                 Modifier

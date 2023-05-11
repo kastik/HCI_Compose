@@ -1,15 +1,19 @@
 package com.kastik.hci.ui.mainComponents
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
@@ -27,7 +31,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -38,7 +45,6 @@ import com.kastik.hci.database.Product
 import com.kastik.hci.database.Stock
 import com.kastik.hci.database.Supplier
 import com.kastik.hci.ui.theme.HCI_ComposeTheme
-import kotlin.random.Random
 
 enum class Screens {
     MainScreen,
@@ -54,7 +60,6 @@ enum class Screens {
 @Preview
 fun InsertProducScreen() {
     val database = AppDatabase.getDatabase(LocalContext.current).AppDao()
-
     var supplierName by remember { mutableStateOf("") }
     var supplierLocation by remember { mutableStateOf("") }
 
@@ -65,15 +70,23 @@ fun InsertProducScreen() {
     var stock by remember { mutableStateOf("") }
 
     var expanded by remember { mutableStateOf(false) }
+    val supplierNames = database.getAllSuppliers().collectAsState(initial = emptyList())
+    var selectedText by remember { mutableStateOf("Insert/Select A Supplier First") }
 
-    val supplierNames = database.getSupplierNames().collectAsState(initial = emptyList())
-    var selectedText by remember { mutableStateOf("Insert A Supplier First") }
+    var selectedSupplier = Supplier(Name="",Location="")
 
 
     HCI_ComposeTheme() {
         Surface() {
-            LazyColumn() {
-                item() {
+            val focusManager = LocalFocusManager.current
+            Column(
+                Modifier
+                    .clickable(
+                        onClick = {
+                            focusManager.clearFocus()
+                        })
+                    .verticalScroll(rememberScrollState())
+            ){
                     Column(
                         Modifier
                             .fillMaxWidth()
@@ -96,7 +109,16 @@ fun InsertProducScreen() {
                                 .padding(10.dp),
                             value = supplierName,
                             onValueChange = { supplierName = it },
-                            label = { Text("Supplier Name") }
+                            label = { Text("Supplier Name") },
+                            singleLine = true,
+                            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+                            keyboardActions = KeyboardActions(
+                                onDone = {
+                                    focusManager.moveFocus(FocusDirection.Down)
+                                    //focusRequester.requestFocus()
+                                }
+                            )
+
                         )
                         Spacer(modifier = Modifier.padding(10.dp))
                         OutlinedTextField(
@@ -106,21 +128,27 @@ fun InsertProducScreen() {
                                 .padding(10.dp),
                             value = supplierLocation,
                             onValueChange = { supplierLocation = it },
-                            label = { Text("Supplier Location") }
-                        )
+                            label = { Text("Supplier Location") },
+                            singleLine = true,
+                            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                            keyboardActions = KeyboardActions(
+                                onDone = {
+                                    focusManager.clearFocus()
+                                    //focusRequester.requestFocus()
+                                }
+                            ))
                         FilledTonalButton(
+
                             modifier= Modifier
                                 .align(Alignment.End)
                                 .padding(10.dp),
                             onClick = {
-                                database.insertSupplier(
-                                    Supplier(
-                                    Random.nextInt(),
-                                    supplierName,supplierLocation
-                                )
-                                )
+                                database.insertSupplier(Supplier(Name = supplierName,Location = supplierLocation))
+
+
                                 supplierName = ""
                                 supplierLocation = ""
+                                focusManager.clearFocus()
                             }) { Text("Insert") }
 
                         Text(
@@ -139,7 +167,15 @@ fun InsertProducScreen() {
                                 .padding(10.dp),
                             value = productName,
                             onValueChange = { productName = it },
-                            label = { Text("Product") }
+                            label = { Text("Product") },
+                            singleLine = true,
+                            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+                            keyboardActions = KeyboardActions(
+                                onDone = {
+                                    focusManager.moveFocus(FocusDirection.Down)
+                                    //focusRequester.requestFocus()
+                                }
+                            )
                         )
                         Spacer(modifier = Modifier.padding(10.dp))
                         OutlinedTextField(
@@ -149,7 +185,15 @@ fun InsertProducScreen() {
                                 .padding(10.dp),
                             value = manufacturer,
                             onValueChange = { manufacturer = it },
-                            label = { Text("Manufacturer") }
+                            label = { Text("Manufacturer") },
+                            singleLine = true,
+                            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+                            keyboardActions = KeyboardActions(
+                                onDone = {
+                                    focusManager.moveFocus(FocusDirection.Down)
+                                    //focusRequester.requestFocus()
+                                }
+                            )
                         )
                         Spacer(modifier = Modifier.padding(10.dp))
                         OutlinedTextField(
@@ -164,7 +208,16 @@ fun InsertProducScreen() {
                                     price = it }
                             },
                             label = { Text("Price") },
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+                            singleLine = true,
+                            keyboardOptions = KeyboardOptions(
+                                imeAction = ImeAction.Next,
+                                keyboardType = KeyboardType.Number),
+                            keyboardActions = KeyboardActions(
+                                onDone = {
+                                    focusManager.moveFocus(FocusDirection.Down)
+                                    //focusRequester.requestFocus()
+                                }
+                            )
                         )
                         Spacer(modifier = Modifier.padding(10.dp))
                         OutlinedTextField(
@@ -174,7 +227,15 @@ fun InsertProducScreen() {
                                 .padding(10.dp),
                             value = description,
                             onValueChange = { description = it },
-                            label = { Text("Product Description") }
+                            label = { Text("Product Description") },
+                            singleLine = true,
+                            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+                            keyboardActions = KeyboardActions(
+                                onDone = {
+                                    focusManager.moveFocus(FocusDirection.Down)
+                                    //focusRequester.requestFocus()
+                                }
+                            )
                         )
                         Spacer(modifier = Modifier.padding(10.dp))
                         ExposedDropdownMenuBox(
@@ -202,16 +263,17 @@ fun InsertProducScreen() {
                             )
 
                             ExposedDropdownMenu(
-                                expanded = expanded,
+                                expanded = if(supplierNames.value.isEmpty()){ false }else{ expanded },
                                 onDismissRequest = {
                                     expanded = false
                                 }
                             ) {
                                 supplierNames.value.forEach { item ->
                                     DropdownMenuItem(
-                                        text = { Text(text = item) },
+                                        text = { Text(text = item.Name) },
                                         onClick = {
-                                            selectedText = item
+                                            selectedSupplier = item
+                                            selectedText = item.Name
                                             expanded = false
                                         }
                                     )
@@ -232,44 +294,63 @@ fun InsertProducScreen() {
                                     stock = it }
                             },
                             label = { Text("Quantity") },
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+                            singleLine = true,
+                            keyboardOptions = KeyboardOptions(
+                                imeAction = ImeAction.Done,
+                                keyboardType = KeyboardType.Number),
+                            keyboardActions = KeyboardActions(
+                                onDone = {
+                                    focusManager.clearFocus()
+                                    //focusRequester.requestFocus()
+                                }
+                            )
                         )
                         FilledTonalButton(
                             modifier = Modifier
                                 .align(Alignment.End)
                                 .padding(10.dp),
                             onClick = {
-                                database.insertStock(Stock(12,12))
-                                database.insertProduct(
-                                    Product(
-                                    Random.nextInt(),productName, manufacturer,price.toInt(),description,697620083,12
-                                )
-                                )
+                                    val stockId = database.insertStock(Stock(Stock = stock.toInt()))
+                                    database.insertProduct(
+                                        Product(
+                                            SupplierId=selectedSupplier.SupplierId,
+                                            ProductName=productName,
+                                            ProductManufacturer = manufacturer,
+                                            ProductPrice = price.toInt(),
+                                            ProductDescription = description,
+                                            StockId = stockId.toInt()))
+
+                                productName=""
+                                manufacturer=""
+                                price=""
+                                description=""
+                                stock=""
                             }) { Text("Insert") }
                     }
                 }
             }
         }
-    }
 }
 
 
 @Composable
-@Preview
 fun MainScreen() {
     Text(text = "Hi")
 }
 
 
 @Composable
-@Preview
 fun LocalDatabaseScreen() {
     val lazyListState = rememberLazyListState()
-    val db = AppDatabase.getDatabase(LocalContext.current)
-    val mdata = db.AppDao().getAllProducts().collectAsState(initial = emptyList())
+    val dao = AppDatabase.getDatabase(LocalContext.current).AppDao()
+    val products = dao.getAllProducts().collectAsState(initial = emptyList())
+    val stocks = dao.getAllStocks().collectAsState(initial = emptyList())
+    val suppliers = dao.getAllSuppliers().collectAsState(initial = emptyList())
+
+    //DataWrapper(productData,supplierData,stockData)
     LazyColumn(Modifier.fillMaxSize()) {
-        itemsIndexed(mdata.value) { index, item ->
-            MyCard(product = item)
+        items(products.value) { item ->
+            LocalDatabaseCard(product = item, stock = dao.getStockOfProduct(item.StockId), supplier = dao.getSupplierInfo(item.SupplierId))
         }
     }
 }
@@ -279,5 +360,24 @@ fun LocalDatabaseScreen() {
 @Composable
 fun RemoteDatabaseScreen() {
     val db = Firebase.firestore
+    val transactions = db.collection("Transactions")
+    val customers = db.collection("Customer").get()
+    var chats = remember {
+        mutableStateOf(emptyList<Transactions>())
+    }
+
+
+    transactions.addSnapshotListener { snapshot, e ->
+        e?.let {
+            // Handle error
+            return@addSnapshotListener
+        }
+
+    }
+
+    LazyColumn(){
+
+    }
+
     Text(text = "Remote Activity stuff")
 }
