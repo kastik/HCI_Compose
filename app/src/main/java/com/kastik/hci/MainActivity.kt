@@ -3,7 +3,7 @@ package com.kastik.hci
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import com.kastik.hci.ui.shit.MainUI
+import com.kastik.hci.ui.mainComponents.MainUI
 
 
 class MainActivity : ComponentActivity() {
@@ -13,7 +13,6 @@ class MainActivity : ComponentActivity() {
         setContent {
             MainUI()
         }
-
     }
 }
 

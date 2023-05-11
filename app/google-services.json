@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "573178540537",
+    "project_id": "hci-compose",
+    "storage_bucket": "hci-compose.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:573178540537:android:c672ddfe66067f7942cd28",
+        "android_client_info": {
+          "package_name": "com.kastik.hci"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "573178540537-qtfrtg1hspnhh5s27ooger7km41vkauf.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCCDRmjci2Q1GHlPdC-tPOEnGIZJLOFJok"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "573178540537-qtfrtg1hspnhh5s27ooger7km41vkauf.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
