@@ -12,13 +12,6 @@
         android:supportsRtl="true"
         tools:targetApi="31"
         android:theme="@style/Theme.HCI_Compose">
-
-        <activity
-            android:name=".RemoteActivity"
-            android:exported="false" />
-        <activity
-            android:name=".LocalActivity"
-            android:exported="false" />
         <activity
             android:name=".MainActivity"
             android:exported="true"

@@ -56,7 +56,9 @@ data class Supplier(
     val Location: String
 )
 
-@Entity(foreignKeys = [ForeignKey(entity = Supplier::class, childColumns = ["SupplierId"], parentColumns = ["SupplierId"]),ForeignKey(entity = Supplier::class, childColumns = ["SupplierId"], parentColumns = ["SupplierId"])])
+@Entity(foreignKeys =
+[ForeignKey(entity = Supplier::class, childColumns = ["SupplierId"], parentColumns = ["SupplierId"],onDelete = ForeignKey.CASCADE),
+    ForeignKey(entity = Stock::class, childColumns = ["StockId"], parentColumns = ["StockId"],onDelete = ForeignKey.CASCADE)])
 data class Product(
     @PrimaryKey(autoGenerate = true)
     val ProductId: Int = 0,
