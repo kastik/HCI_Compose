@@ -1,20 +1,18 @@
 package com.kastik.hci.database
 
 import com.google.errorprone.annotations.Keep
+import com.google.firebase.firestore.DocumentId
 
-class CustomerData(
-    @Keep
-    val customerId : Int = 0,
-    @Keep
+data class CustomerData(
+    @DocumentId val customerId : String = "",
     val customerName: String = "",
-    @Keep
     val customerLastName: String = ""
 )
-class Transactions(
+data class Transactions(
     @Keep
-    val customerId : Int = 0,
+    val customerId : String = "" ,
     @Keep
-    val productId: Int = 0,
+    val product: String = "",
     @Keep
     val quantity: Int = 0
     )

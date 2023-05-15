@@ -1,155 +1,58 @@
-package com.kastik.hci.ui.mainComponents
+package com.kastik.hci.ui.components
 
 import android.util.Log
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentSize
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Error
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.focus.FocusManager
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
-import com.google.firebase.firestore.ktx.firestore
-import com.google.firebase.ktx.Firebase
 import com.kastik.hci.database.AppDao
-import com.kastik.hci.database.AppDatabase
 import com.kastik.hci.database.Product
 import com.kastik.hci.database.Stock
 import com.kastik.hci.database.Supplier
-import com.kastik.hci.database.Transactions
-import com.kastik.hci.ui.theme.HCI_ComposeTheme
-
-enum class Screens {
-    MainScreen, LocalDatabaseScreen, RemoteDatabaseScreen, InsertProducScreen,EditProductScreen,InsertTransactionScreen,EditTransactionScreen
-}
-
+import com.kastik.hci.utils.checkNumberInput
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun InsertScreen(productId: Int?) {
-    val database = AppDatabase.getDatabase(LocalContext.current).AppDao()
-    val product = database.getProductWithId(productId)
-
-    HCI_ComposeTheme() {
-        Surface() {
-            val focusManager = LocalFocusManager.current
-            LazyColumn() {
-                item() {
-                    SupplierAddScreen(dao = database, focusManager = focusManager)
-                }
-                item {
-                    ProductAddScreen(dao = database, focusManager = focusManager, product = product)
-                }
-
-            }
-        }
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun SupplierAddScreen(dao: AppDao, focusManager: FocusManager) {
-
-    var supplierName by remember { mutableStateOf("") }
-    var supplierLocation by remember { mutableStateOf("") }
-    Column(
-        Modifier.wrapContentSize()
-    ) {
-        Text(
-            modifier = Modifier
-                .align(Alignment.CenterHorizontally)
-                .padding(10.dp),
-            style = MaterialTheme.typography.headlineSmall,
-            text = "Insert Supplier"
-        )
-        OutlinedTextField(shape = RoundedCornerShape(15.dp),
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(10.dp),
-            value = supplierName,
-            onValueChange = { supplierName = it },
-            label = { Text("Supplier Name") },
-            singleLine = true,
-            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
-            keyboardActions = KeyboardActions(onDone = {
-                focusManager.moveFocus(FocusDirection.Down)
-                //focusRequester.requestFocus()
-            })
-
-        )
-        Spacer(modifier = Modifier.padding(10.dp))
-        OutlinedTextField(shape = RoundedCornerShape(15.dp),
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(10.dp),
-            value = supplierLocation,
-            onValueChange = { supplierLocation = it },
-            label = { Text("Supplier Location") },
-            singleLine = true,
-            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-            keyboardActions = KeyboardActions(onDone = {
-                focusManager.clearFocus()
-                //focusRequester.requestFocus()
-            }))
-        FilledTonalButton(
-
-            modifier = Modifier
-                .align(Alignment.End)
-                .padding(10.dp), onClick = {
-                dao.insertSupplier(Supplier(Name = supplierName, Location = supplierLocation))
-
-
-                supplierName = ""
-                supplierLocation = ""
-                focusManager.clearFocus()
-            }) { Text("Insert") }
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun ProductAddScreen(dao: AppDao, focusManager: FocusManager,product: Product?) {
+fun ProductComponent(dao: AppDao, focusManager: FocusManager, product: Product?) {
     var productName by remember { mutableStateOf("") }
     var manufacturer by remember { mutableStateOf("") }
     var price by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
     var stock by remember { mutableStateOf("") }
     if (product != null) {
-        Log.d("paok","Product ! null")
+        Log.d("paok", "Product ! null")
         productName = product.ProductName
         manufacturer = product.ProductManufacturer
-        price =product.ProductPrice.toString()
+        price = product.ProductPrice.toString()
         description = product.ProductDescription
         stock = dao.getStockOfProduct(product.StockId).Stock.toString()
     }
@@ -159,7 +62,11 @@ fun ProductAddScreen(dao: AppDao, focusManager: FocusManager,product: Product?) 
     val supplierNames = dao.getAllSuppliers().collectAsState(initial = emptyList())
     var selectedText by remember { mutableStateOf("Insert/Select A Supplier First") }
 
-    val selectedSupplier = remember { mutableStateOf( Supplier(Name = "", Location = "")) }
+    val selectedSupplier = remember { mutableStateOf(Supplier(Name = "", Location = "")) }
+
+
+    var priceError by rememberSaveable { mutableStateOf(false) }
+    var quantityError by rememberSaveable { mutableStateOf(false) }
 
     Column(
         Modifier
@@ -176,7 +83,8 @@ fun ProductAddScreen(dao: AppDao, focusManager: FocusManager,product: Product?) 
             style = MaterialTheme.typography.headlineSmall,
             text = "Insert Product"
         )
-        OutlinedTextField(shape = RoundedCornerShape(15.dp),
+        OutlinedTextField(
+            shape = RoundedCornerShape(15.dp),
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(10.dp),
@@ -188,9 +96,11 @@ fun ProductAddScreen(dao: AppDao, focusManager: FocusManager,product: Product?) 
             keyboardActions = KeyboardActions(onDone = {
                 focusManager.moveFocus(FocusDirection.Down)
                 //focusRequester.requestFocus()
-            }))
+            })
+        )
         Spacer(modifier = Modifier.padding(10.dp))
-        OutlinedTextField(shape = RoundedCornerShape(15.dp),
+        OutlinedTextField(
+            shape = RoundedCornerShape(15.dp),
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(10.dp),
@@ -202,18 +112,29 @@ fun ProductAddScreen(dao: AppDao, focusManager: FocusManager,product: Product?) 
             keyboardActions = KeyboardActions(onDone = {
                 focusManager.moveFocus(FocusDirection.Down)
                 //focusRequester.requestFocus()
-            }))
+            })
+        )
         Spacer(modifier = Modifier.padding(10.dp))
-        OutlinedTextField(shape = RoundedCornerShape(15.dp),
+        OutlinedTextField(
+            shape = RoundedCornerShape(15.dp),
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(10.dp),
             value = price,
-            onValueChange = {
-                if (it.isEmpty() || it.matches(Regex("^\\d+\$"))) {
-                    price = it
+            supportingText = {
+                if (priceError) {
+                    Text(
+                        modifier = Modifier.fillMaxWidth(),
+                        text = "Please provide only numbers",
+                        color = MaterialTheme.colorScheme.error
+                    )
                 }
             },
+            onValueChange = {
+                price = it
+                priceError = checkNumberInput(it)
+            },
+            isError = priceError,
             label = { Text("Price") },
             singleLine = true,
             keyboardOptions = KeyboardOptions(
@@ -222,9 +143,15 @@ fun ProductAddScreen(dao: AppDao, focusManager: FocusManager,product: Product?) 
             keyboardActions = KeyboardActions(onDone = {
                 focusManager.moveFocus(FocusDirection.Down)
                 //focusRequester.requestFocus()
-            }))
+            }),
+            trailingIcon = {
+                if (quantityError)
+                    Icon(Icons.Filled.Error,"error", tint = MaterialTheme.colorScheme.error)
+            }
+        )
         Spacer(modifier = Modifier.padding(10.dp))
-        OutlinedTextField(shape = RoundedCornerShape(15.dp),
+        OutlinedTextField(
+            shape = RoundedCornerShape(15.dp),
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(10.dp),
@@ -236,7 +163,8 @@ fun ProductAddScreen(dao: AppDao, focusManager: FocusManager,product: Product?) 
             keyboardActions = KeyboardActions(onDone = {
                 focusManager.moveFocus(FocusDirection.Down)
                 //focusRequester.requestFocus()
-            }))
+            })
+        )
         Spacer(modifier = Modifier.padding(10.dp))
         ExposedDropdownMenuBox(modifier = Modifier
             .fillMaxWidth()
@@ -276,16 +204,24 @@ fun ProductAddScreen(dao: AppDao, focusManager: FocusManager,product: Product?) 
         }
         Spacer(modifier = Modifier.padding(10.dp))
         OutlinedTextField(
-
+            isError = quantityError,
+            supportingText = {
+                if (quantityError) {
+                    Text(
+                        modifier = Modifier.fillMaxWidth(),
+                        text = "Please provide only numbers",
+                        color = MaterialTheme.colorScheme.error
+                    )
+                }
+            },
             shape = RoundedCornerShape(15.dp),
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(10.dp),
             value = stock,
             onValueChange = {
-                if (it.isEmpty() || it.matches(Regex("^\\d+\$"))) {
-                    stock = it
-                }
+                stock = it
+                quantityError = checkNumberInput(it)
             },
             label = { Text("Quantity") },
             singleLine = true,
@@ -295,35 +231,44 @@ fun ProductAddScreen(dao: AppDao, focusManager: FocusManager,product: Product?) 
             keyboardActions = KeyboardActions(onDone = {
                 focusManager.clearFocus()
                 //focusRequester.requestFocus()
-            }))
+            }),
+            trailingIcon = {
+                if (quantityError)
+                    Icon(Icons.Filled.Error,"error", tint = MaterialTheme.colorScheme.error)
+            }
+        )
         FilledTonalButton(modifier = Modifier
             .align(Alignment.End)
             .padding(10.dp), onClick = {
             val stockId = dao.insertStock(Stock(Stock = stock.toInt()))
 
-            Log.d("selectedSupplier.SupplierId",selectedSupplier.value.SupplierId.toString())
-            Log.d("stockId.toInt()",stockId.toInt().toString())
-
-            if (product==null){
-                dao.insertProduct(
-                    Product(
-                        SupplierId = selectedSupplier.value.SupplierId,
-                        ProductName = productName,
-                        ProductManufacturer = manufacturer,
-                        ProductPrice = price.toInt(),
-                        ProductDescription = description,
-                        StockId = stockId.toInt()))
-            }
-            else{
-                dao.updateProduct(
-                    Product(
-                        ProductId=product.ProductId,
-                        SupplierId = selectedSupplier.value.SupplierId,
-                        ProductName = productName,
-                        ProductManufacturer = manufacturer,
-                        ProductPrice = price.toInt(),
-                        ProductDescription = description,
-                        StockId = stockId.toInt()))
+            Log.d("selectedSupplier.SupplierId", selectedSupplier.value.SupplierId.toString())
+            Log.d("stockId.toInt()", stockId.toInt().toString())
+            if (!priceError || !quantityError) {
+                if (product == null) {
+                    dao.insertProduct(
+                        Product(
+                            SupplierId = selectedSupplier.value.SupplierId,
+                            ProductName = productName,
+                            ProductManufacturer = manufacturer,
+                            ProductPrice = price.toInt(),
+                            ProductDescription = description,
+                            StockId = stockId.toInt()
+                        )
+                    )
+                } else {
+                    dao.updateProduct(
+                        Product(
+                            ProductId = product.ProductId,
+                            SupplierId = selectedSupplier.value.SupplierId,
+                            ProductName = productName,
+                            ProductManufacturer = manufacturer,
+                            ProductPrice = price.toInt(),
+                            ProductDescription = description,
+                            StockId = stockId.toInt()
+                        )
+                    )
+                }
             }
 
 
@@ -334,96 +279,15 @@ fun ProductAddScreen(dao: AppDao, focusManager: FocusManager,product: Product?) 
             stock = ""
         }) { Text("Insert") }
     }
-}
-
-@Composable
-fun MainScreen() {
-    Text(text = "Hi")
-}
-
-
-@Composable
-fun LocalDatabaseScreen(
-    showSelectionOnCard: MutableState<Boolean>,
-    action: MutableState<CardActions>,
-    selectedProductId: MutableState<Int>,
-    navController: NavController
-) {
-    val lazyListState = rememberLazyListState()
-    val dao = AppDatabase.getDatabase(LocalContext.current).AppDao()
-    val products = dao.getAllProducts().collectAsState(initial = emptyList())
-    val stocks = dao.getAllStocks().collectAsState(initial = emptyList())
-    val suppliers = dao.getAllSuppliers().collectAsState(initial = emptyList())
-
-    //DataWrapper(productData,supplierData,stockData)
-    LazyColumn(Modifier.fillMaxSize()) {
-        items(products.value) { item ->
-            LocalDatabaseCard(
-                product = item,
-                stock = dao.getStockOfProduct(item.StockId),
-                supplier = dao.getSupplierInfo(item.SupplierId),
-                actionsEnabled = showSelectionOnCard,
-                action = action,
-                navController = navController,
-                selectedProductId= selectedProductId
-            )
-        }
-    }
-}
-
-
-@Composable
-fun RemoteDatabaseScreen() {
-    val transactions = Firebase.firestore.collection("Transactions")
-
-    val myData = remember { mutableStateListOf<Transactions>() }
-
-    transactions.get().addOnSuccessListener { documents ->
-        for (document in documents) {
-            myData.add(document.toObject(Transactions::class.java))
-            Log.d("MyLog","Got Transactions ${document.data}")
-        }
-    }
-
-    LazyColumn {
-        items(myData) {  transactions ->
-            Log.d("MyLog","Card with customerId ${transactions.customerId}")
-            RemoteDatabaseCard(transactions = transactions)
-
-        }
-    }
-
 
 }
 
-
-@Composable
-fun InsertTransactionScreen(){
-
-    val db = Firebase.firestore.collection("Transaction")
-
-    HCI_ComposeTheme() {
-        Surface() {
-            val focusManager = LocalFocusManager.current
-            LazyColumn() {
-                item() {
-                    insertTransaction(focusManager = focusManager)
-                }
-                item {
-
-                }
-
-            }
-        }
-    }
-
-
-}
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun insertTransaction(focusManager: FocusManager){
+fun SupplierComponent(dao: AppDao, focusManager: FocusManager) {
+
     var supplierName by remember { mutableStateOf("") }
     var supplierLocation by remember { mutableStateOf("") }
     Column(
@@ -434,15 +298,16 @@ fun insertTransaction(focusManager: FocusManager){
                 .align(Alignment.CenterHorizontally)
                 .padding(10.dp),
             style = MaterialTheme.typography.headlineSmall,
-            text = "Insert Customer"
+            text = "Insert Supplier"
         )
-        OutlinedTextField(shape = RoundedCornerShape(15.dp),
+        OutlinedTextField(
+            shape = RoundedCornerShape(15.dp),
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(10.dp),
             value = supplierName,
             onValueChange = { supplierName = it },
-            label = { Text("Customer Name") },
+            label = { Text("Supplier Name") },
             singleLine = true,
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
             keyboardActions = KeyboardActions(onDone = {
@@ -452,25 +317,27 @@ fun insertTransaction(focusManager: FocusManager){
 
         )
         Spacer(modifier = Modifier.padding(10.dp))
-        OutlinedTextField(shape = RoundedCornerShape(15.dp),
+        OutlinedTextField(
+            shape = RoundedCornerShape(15.dp),
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(10.dp),
             value = supplierLocation,
             onValueChange = { supplierLocation = it },
-            label = { Text("Customer Lastname") },
+            label = { Text("Supplier Location") },
             singleLine = true,
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
             keyboardActions = KeyboardActions(onDone = {
                 focusManager.clearFocus()
                 //focusRequester.requestFocus()
-            }))
+            })
+        )
         FilledTonalButton(
 
             modifier = Modifier
                 .align(Alignment.End)
                 .padding(10.dp), onClick = {
-                //dao.insertSupplier(Supplier(Name = supplierName, Location = supplierLocation))
+                dao.insertSupplier(Supplier(Name = supplierName, Location = supplierLocation))
 
 
                 supplierName = ""
