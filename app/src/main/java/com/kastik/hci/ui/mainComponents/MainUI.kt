@@ -1,5 +1,6 @@
 package com.kastik.hci.ui.mainComponents
 
+import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -44,7 +45,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -87,7 +87,7 @@ fun MainUI() {
     val drawerGestureEnabled = remember { mutableStateOf(true) }
     val showSelectionOnCard = remember { mutableStateOf(false) }
     val action = remember { mutableStateOf(CardActions.Empty) }
-    val performAction = remember { mutableStateOf(false) }
+    val selectedProductId = remember { mutableStateOf(0) }
 
     HCI_ComposeTheme {
         Surface {
@@ -132,7 +132,7 @@ fun MainUI() {
                                 selectedItem.value = 2
                                 dropDownState.value = true
                                 drawerGestureEnabled.value = true
-                                LocalDatabaseScreen(showSelectionOnCard,action,performAction)
+                                LocalDatabaseScreen(showSelectionOnCard,action,selectedProductId,navController)
                             }
                             composable(Screens.RemoteDatabaseScreen.name) {
                                 LaunchedEffect(drawerState) {
@@ -147,12 +147,22 @@ fun MainUI() {
                             composable(Screens.InsertProducScreen.name) {
                                 topBarState.value = false
                                 drawerGestureEnabled.value = false
-                                InsertScreen()
+                                Log.d("MyLog","Insert")
+                                InsertScreen(productId = null)
+
                             }
-                            composable(Screens.EditProductScreen.name){
+                            composable(Screens.EditProductScreen.name){ //TODO
                                 topBarState.value = false
                                 drawerGestureEnabled.value = false
-                                InsertScreen()
+                                Log.d("MyLog","Edit with id ${it.arguments?.getInt("productId")}")
+                                InsertScreen(productId = selectedProductId.value)
+
+                            }
+                            composable(Screens.InsertTransactionScreen.name) {
+                                topBarState.value = false
+                                drawerGestureEnabled.value = false
+                                InsertTransactionScreen()
+
                             }
                         }
                     }
@@ -263,8 +273,11 @@ fun DropDownMenu(
             DropdownMenuItem(
                 text = { Text("Insert") }, onClick = {
                     expanded = false
-                    //db.AppDao().insertProduct(Product(Random.nextInt(), "asdasdad", "asdasd", 1, "kaka"))
-                    navController.navigate(Screens.InsertProducScreen.name)
+                    if(navController.currentDestination?.route==Screens.LocalDatabaseScreen.name){
+                        navController.navigate(Screens.InsertProducScreen.name)
+                    }else{
+                        navController.navigate(Screens.InsertTransactionScreen.name)
+                    }
                 }, leadingIcon = {
                     Icon(
                         Icons.Outlined.Add, contentDescription = null
@@ -274,8 +287,8 @@ fun DropDownMenu(
             DropdownMenuItem(text = { Text("Edit") },
                 onClick = {
                     expanded = false
-                    //db.AppDao().insertProduct(Product(Random.nextInt(), "asdasdad", "asdasd", 1, "kaka"))
-                    navController.navigate(Screens.EditProductScreen.name)
+                    action.value = CardActions.Modify
+                    showSelectionOnCard.value = !showSelectionOnCard.value
                 },
                 leadingIcon = {
                     Icon(
@@ -309,6 +322,9 @@ fun LocalDatabaseCard(
     supplier: Supplier,
     actionsEnabled: MutableState<Boolean>,
     action: MutableState<CardActions>,
+    navController: NavController,
+    selectedProductId: MutableState<Int>
+
     //,onClick: () -> Unit
 ) {
     val database = AppDatabase.getDatabase(LocalContext.current).AppDao()
@@ -317,17 +333,6 @@ fun LocalDatabaseCard(
             .fillMaxWidth()
             .padding(10.dp)
             .height(IntrinsicSize.Min)
-            .clickable(
-                enabled = actionsEnabled.value,
-                onClick = {
-                    if (action.value == CardActions.Delete && actionsEnabled.value) {
-                        database.deleteProduct(product)
-                    } else {
-                        if (action.value == CardActions.Modify && actionsEnabled.value) {
-                            //TODO
-                        }
-                    }
-                })
         //shape = MaterialTheme.shapes.large,
         //border = BorderStroke(2.dp,MaterialTheme.colorScheme.inversePrimary),
         //elevation = CardDefaults.cardElevation(defaultElevation = 10.dp)
@@ -337,10 +342,22 @@ fun LocalDatabaseCard(
                 Column(
                     modifier = Modifier
                         .fillMaxHeight()
-                        .background(color = Color.Red)
+                        .then(modifierBasedOnAction(action))
                         .padding(5.dp)
-                       ,
-                    verticalArrangement = Arrangement.Center,
+                        .clickable(
+                            // enabled = actionsEnabled.value,
+                            onClick = {
+                                if (action.value == CardActions.Delete && actionsEnabled.value) {
+                                    database.deleteProduct(product)
+                                } else {
+                                    if (action.value == CardActions.Modify && actionsEnabled.value) {
+                                        selectedProductId.value = product.ProductId
+                                        navController.navigate(Screens.EditProductScreen.name)
+                                    }
+                                }
+                            }
+                        ),
+                    verticalArrangement = Arrangement.Center
                 ) {
                     if(action.value==CardActions.Delete) {
                         Icon(Icons.Filled.Delete, contentDescription = "Delete the item")
@@ -391,16 +408,20 @@ fun LocalDatabaseCard(
 fun RemoteDatabaseCard(
     transactions: Transactions
 ) {
-    val customerData = remember { mutableStateListOf<CustomerData>() }
+    var customerData by remember { mutableStateOf(CustomerData()) }
 
-    val q = Firebase.firestore.collection("Customers").whereEqualTo("customerId",transactions.customerId)
 
-    q.get().addOnSuccessListener { documents ->
-        for (document in documents) {
-            customerData.add(document.toObject(CustomerData::class.java))
+    val q = Firebase.firestore.collection("Customers")
+        .whereEqualTo("customerId",transactions.customerId)
+        .get()
+        .addOnSuccessListener { documents ->
+            for (document in documents) {
+                customerData = (document.toObject(CustomerData::class.java))
+                Log.d("MyLog", "${document.data}")
+                Log.d("MyLog", document.id)
+            }
         }
-    }
-
+    Log.d("Mylog","Exited")
     var expand = remember { false }
     Card(
         shape = MaterialTheme.shapes.large,
@@ -432,10 +453,10 @@ fun RemoteDatabaseCard(
                 .padding(5.dp)
         ) {
             Text(text = "Customer Name", style = (MaterialTheme.typography.labelSmall))
-            Text(text = customerData[0].customerName)
+            Text(text = customerData.customerName)
             Spacer(modifier = Modifier.padding(5.dp))
             Text(text = "Customer Lastname", style = (MaterialTheme.typography.labelSmall))
-            Text(text = customerData[0].customerLastName)
+            Text(text = customerData.customerLastName)
             Spacer(modifier = Modifier.padding(5.dp))
         }
 
@@ -448,4 +469,12 @@ fun RemoteDatabaseCard(
 @Composable
 fun test(){
     RemoteDatabaseCard(transactions = Transactions(0, 0, 123))
+}
+
+fun modifierBasedOnAction(action: MutableState<CardActions>) :Modifier{
+    return if(action.value==CardActions.Delete){
+        Modifier.background(Color.Red)
+    }else{
+        Modifier.background(Color.Yellow)
+    }
 }

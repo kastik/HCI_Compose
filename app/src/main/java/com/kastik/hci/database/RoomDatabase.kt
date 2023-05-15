@@ -11,6 +11,7 @@ import androidx.room.PrimaryKey
 import androidx.room.Query
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import androidx.room.Update
 import kotlinx.coroutines.flow.Flow
 
 @Database(entities = [Product::class,Stock::class,Supplier::class], version = 1)
@@ -29,7 +30,7 @@ abstract class AppDatabase : RoomDatabase() {
                         AppDatabase::class.java,
                         "Database.db"
                     )
-                        .fallbackToDestructiveMigration()
+                        //.fallbackToDestructiveMigration()
                         .allowMainThreadQueries() //TODO Remove at some point
                         .build()
 
@@ -108,6 +109,9 @@ interface AppDao {
    fun getStockOfProduct(stockId: Int): Stock
 
 
+   @Query("SELECT * FROM Product WHERE :productId==Product.ProductId")
+   fun getProductWithId(productId: Int?) :Product?
+
     //@Query("SELECT * FROM Supplier LEFT JOIN Product ON Supplier.SupplierId==Product.SupplierId AND Product.ProductId==:productId")
     //fun getSupplierOfProduct(productId: Int): Flow<Supplier>
 
@@ -121,6 +125,9 @@ interface AppDao {
 
     @Delete
     fun deleteProduct(product: Product)
+
+    @Update
+    fun updateProduct(product: Product)
 
     //TODO Add @Update fun
     //TODO ADD suspend fun on UPDATE DELETE AND MODIFY
