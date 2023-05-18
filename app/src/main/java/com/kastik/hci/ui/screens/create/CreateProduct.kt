@@ -1,6 +1,5 @@
-package com.kastik.hci.ui.components
+package com.kastik.hci.ui.screens.create
 
-import android.util.Log
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -19,54 +18,62 @@ import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusDirection
-import androidx.compose.ui.focus.FocusManager
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import com.kastik.hci.database.AppDao
-import com.kastik.hci.database.Product
-import com.kastik.hci.database.Stock
-import com.kastik.hci.database.Supplier
+import androidx.navigation.NavController
+import com.kastik.hci.data.AppDao
+import com.kastik.hci.data.Product
+import com.kastik.hci.data.Stock
+import com.kastik.hci.data.Supplier
 import com.kastik.hci.utils.checkNumberInput
+import kotlinx.coroutines.launch
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ProductComponent(dao: AppDao, focusManager: FocusManager, product: Product?) {
-    var productName by remember { mutableStateOf("") }
-    var manufacturer by remember { mutableStateOf("") }
-    var price by remember { mutableStateOf("") }
-    var description by remember { mutableStateOf("") }
-    var stock by remember { mutableStateOf("") }
-    if (product != null) {
-        Log.d("paok", "Product ! null")
-        productName = product.ProductName
-        manufacturer = product.ProductManufacturer
-        price = product.ProductPrice.toString()
-        description = product.ProductDescription
-        stock = dao.getStockOfProduct(product.StockId).Stock.toString()
-    }
+fun CreateProductScreen(dao: AppDao, snackbarHostState: SnackbarHostState,navController: NavController) {
+    val productName = remember { mutableStateOf("") }
+    val manufacturer = remember { mutableStateOf("") }
+    val price = remember { mutableStateOf("") }
+    val description = remember { mutableStateOf("") }
+    val stock = remember { mutableStateOf("") }
+    val focusManager = LocalFocusManager.current
+
 
 
     var expanded by remember { mutableStateOf(false) }
     val supplierNames = dao.getAllSuppliers().collectAsState(initial = emptyList())
-    var selectedText by remember { mutableStateOf("Insert/Select A Supplier First") }
+    var selectedText = remember { mutableStateOf("")}
 
-    val selectedSupplier = remember { mutableStateOf(Supplier(Name = "", Location = "")) }
+    selectedText.value = if(supplierNames.value.isEmpty()){
+        "Insert A Supplier First"
+    }
+    else{
+        "Select A Supplier"
+    }
+
+    val selectedSupplier = remember { mutableStateOf(Supplier(0,"","")) }
 
 
     var priceError by rememberSaveable { mutableStateOf(false) }
     var quantityError by rememberSaveable { mutableStateOf(false) }
+
+    val scope = rememberCoroutineScope()
 
     Column(
         Modifier
@@ -81,15 +88,15 @@ fun ProductComponent(dao: AppDao, focusManager: FocusManager, product: Product?)
                 .align(Alignment.CenterHorizontally)
                 .padding(10.dp),
             style = MaterialTheme.typography.headlineSmall,
-            text = "Insert Product"
+            text = "Insert A Product"
         )
         OutlinedTextField(
             shape = RoundedCornerShape(15.dp),
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(10.dp),
-            value = productName,
-            onValueChange = { productName = it },
+            value = productName.value,
+            onValueChange = { productName.value = it },
             label = { Text("Product") },
             singleLine = true,
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
@@ -104,8 +111,8 @@ fun ProductComponent(dao: AppDao, focusManager: FocusManager, product: Product?)
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(10.dp),
-            value = manufacturer,
-            onValueChange = { manufacturer = it },
+            value = manufacturer.value,
+            onValueChange = { manufacturer.value = it },
             label = { Text("Manufacturer") },
             singleLine = true,
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
@@ -120,7 +127,7 @@ fun ProductComponent(dao: AppDao, focusManager: FocusManager, product: Product?)
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(10.dp),
-            value = price,
+            value = price.value,
             supportingText = {
                 if (priceError) {
                     Text(
@@ -131,7 +138,7 @@ fun ProductComponent(dao: AppDao, focusManager: FocusManager, product: Product?)
                 }
             },
             onValueChange = {
-                price = it
+                price.value = it
                 priceError = checkNumberInput(it)
             },
             isError = priceError,
@@ -146,7 +153,7 @@ fun ProductComponent(dao: AppDao, focusManager: FocusManager, product: Product?)
             }),
             trailingIcon = {
                 if (quantityError)
-                    Icon(Icons.Filled.Error,"error", tint = MaterialTheme.colorScheme.error)
+                    Icon(Icons.Filled.Error, "error", tint = MaterialTheme.colorScheme.error)
             }
         )
         Spacer(modifier = Modifier.padding(10.dp))
@@ -155,8 +162,8 @@ fun ProductComponent(dao: AppDao, focusManager: FocusManager, product: Product?)
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(10.dp),
-            value = description,
-            onValueChange = { description = it },
+            value = description.value,
+            onValueChange = { description.value = it },
             label = { Text("Product Description") },
             singleLine = true,
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
@@ -164,6 +171,41 @@ fun ProductComponent(dao: AppDao, focusManager: FocusManager, product: Product?)
                 focusManager.moveFocus(FocusDirection.Down)
                 //focusRequester.requestFocus()
             })
+        )
+        Spacer(modifier = Modifier.padding(10.dp))
+        OutlinedTextField(
+            isError = quantityError,
+            supportingText = {
+                if (quantityError) {
+                    Text(
+                        modifier = Modifier.fillMaxWidth(),
+                        text = "Please provide only numbers",
+                        color = MaterialTheme.colorScheme.error
+                    )
+                }
+            },
+            shape = RoundedCornerShape(15.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(10.dp),
+            value = stock.value,
+            onValueChange = {
+                stock.value = it
+                quantityError = checkNumberInput(it)
+            },
+            label = { Text("Quantity") },
+            singleLine = true,
+            keyboardOptions = KeyboardOptions(
+                imeAction = ImeAction.Done, keyboardType = KeyboardType.Number
+            ),
+            keyboardActions = KeyboardActions(onDone = {
+                focusManager.clearFocus()
+                //focusRequester.requestFocus()
+            }),
+            trailingIcon = {
+                if (quantityError)
+                    Icon(Icons.Filled.Error, "error", tint = MaterialTheme.colorScheme.error)
+            }
         )
         Spacer(modifier = Modifier.padding(10.dp))
         ExposedDropdownMenuBox(modifier = Modifier
@@ -177,7 +219,7 @@ fun ProductComponent(dao: AppDao, focusManager: FocusManager, product: Product?)
                 .menuAnchor()
                 //.align(Alignment.End)
                 .padding(10.dp),
-                value = selectedText,
+                value = selectedText.value,
                 onValueChange = {},
                 readOnly = true,
                 trailingIcon = {
@@ -196,153 +238,36 @@ fun ProductComponent(dao: AppDao, focusManager: FocusManager, product: Product?)
                 supplierNames.value.forEach { item ->
                     DropdownMenuItem(text = { Text(text = item.Name) }, onClick = {
                         selectedSupplier.value = item
-                        selectedText = item.Name
+                        selectedText.value = item.Name
                         expanded = false
                     })
                 }
             }
         }
-        Spacer(modifier = Modifier.padding(10.dp))
-        OutlinedTextField(
-            isError = quantityError,
-            supportingText = {
-                if (quantityError) {
-                    Text(
-                        modifier = Modifier.fillMaxWidth(),
-                        text = "Please provide only numbers",
-                        color = MaterialTheme.colorScheme.error
-                    )
-                }
-            },
-            shape = RoundedCornerShape(15.dp),
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(10.dp),
-            value = stock,
-            onValueChange = {
-                stock = it
-                quantityError = checkNumberInput(it)
-            },
-            label = { Text("Quantity") },
-            singleLine = true,
-            keyboardOptions = KeyboardOptions(
-                imeAction = ImeAction.Done, keyboardType = KeyboardType.Number
-            ),
-            keyboardActions = KeyboardActions(onDone = {
-                focusManager.clearFocus()
-                //focusRequester.requestFocus()
-            }),
-            trailingIcon = {
-                if (quantityError)
-                    Icon(Icons.Filled.Error,"error", tint = MaterialTheme.colorScheme.error)
-            }
-        )
         FilledTonalButton(modifier = Modifier
             .align(Alignment.End)
             .padding(10.dp), onClick = {
-            val stockId = dao.insertStock(Stock(Stock = stock.toInt()))
+            val stockId = dao.insertStock(Stock(Stock = stock.value.toInt()))
 
-            Log.d("selectedSupplier.SupplierId", selectedSupplier.value.SupplierId.toString())
-            Log.d("stockId.toInt()", stockId.toInt().toString())
             if (!priceError || !quantityError) {
-                if (product == null) {
-                    dao.insertProduct(
+                if (0 < dao.insertProduct(
                         Product(
                             SupplierId = selectedSupplier.value.SupplierId,
-                            ProductName = productName,
-                            ProductManufacturer = manufacturer,
-                            ProductPrice = price.toInt(),
-                            ProductDescription = description,
+                            ProductName = productName.value,
+                            ProductManufacturer = manufacturer.value,
+                            ProductPrice = price.value.toInt(),
+                            ProductDescription = description.value,
                             StockId = stockId.toInt()
                         )
                     )
+                ) {
+                    scope.launch { snackbarHostState.showSnackbar("Success!") }
                 } else {
-                    dao.updateProduct(
-                        Product(
-                            ProductId = product.ProductId,
-                            SupplierId = selectedSupplier.value.SupplierId,
-                            ProductName = productName,
-                            ProductManufacturer = manufacturer,
-                            ProductPrice = price.toInt(),
-                            ProductDescription = description,
-                            StockId = stockId.toInt()
-                        )
-                    )
+                    scope.launch { snackbarHostState.showSnackbar("Something Happened Try Again") }
                 }
             }
 
-
-            productName = ""
-            manufacturer = ""
-            price = ""
-            description = ""
-            stock = ""
+            navController.popBackStack()
         }) { Text("Insert") }
-    }
+    }}
 
-}
-
-
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun SupplierComponent(dao: AppDao, focusManager: FocusManager) {
-
-    var supplierName by remember { mutableStateOf("") }
-    var supplierLocation by remember { mutableStateOf("") }
-    Column(
-        Modifier.wrapContentSize()
-    ) {
-        Text(
-            modifier = Modifier
-                .align(Alignment.CenterHorizontally)
-                .padding(10.dp),
-            style = MaterialTheme.typography.headlineSmall,
-            text = "Insert Supplier"
-        )
-        OutlinedTextField(
-            shape = RoundedCornerShape(15.dp),
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(10.dp),
-            value = supplierName,
-            onValueChange = { supplierName = it },
-            label = { Text("Supplier Name") },
-            singleLine = true,
-            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
-            keyboardActions = KeyboardActions(onDone = {
-                focusManager.moveFocus(FocusDirection.Down)
-                //focusRequester.requestFocus()
-            })
-
-        )
-        Spacer(modifier = Modifier.padding(10.dp))
-        OutlinedTextField(
-            shape = RoundedCornerShape(15.dp),
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(10.dp),
-            value = supplierLocation,
-            onValueChange = { supplierLocation = it },
-            label = { Text("Supplier Location") },
-            singleLine = true,
-            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-            keyboardActions = KeyboardActions(onDone = {
-                focusManager.clearFocus()
-                //focusRequester.requestFocus()
-            })
-        )
-        FilledTonalButton(
-
-            modifier = Modifier
-                .align(Alignment.End)
-                .padding(10.dp), onClick = {
-                dao.insertSupplier(Supplier(Name = supplierName, Location = supplierLocation))
-
-
-                supplierName = ""
-                supplierLocation = ""
-                focusManager.clearFocus()
-            }) { Text("Insert") }
-    }
-}

@@ -1,6 +1,5 @@
-package com.kastik.hci.ui.components
+package com.kastik.hci.ui
 
-import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -24,6 +23,8 @@ import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberDrawerState
@@ -36,6 +37,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -43,12 +45,22 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.ktx.Firebase
+import com.kastik.hci.data.AppDatabase
+import com.kastik.hci.ui.components.cards.CardActions
 import com.kastik.hci.ui.screens.AvailableScreens
 import com.kastik.hci.ui.screens.HomeScreen
-import com.kastik.hci.ui.screens.InsertLocal
-import com.kastik.hci.ui.screens.InsertRemoteScreen
-import com.kastik.hci.ui.screens.LocalDataViewScreen
-import com.kastik.hci.ui.screens.RemoteDataViewScreen
+import com.kastik.hci.ui.screens.create.CreateCustomerScreen
+import com.kastik.hci.ui.screens.create.CreateProductScreen
+import com.kastik.hci.ui.screens.create.CreateSupplierScreen
+import com.kastik.hci.ui.screens.create.CreateTransactionScreen
+import com.kastik.hci.ui.screens.edit.EditProductScreen
+import com.kastik.hci.ui.screens.edit.EditSupplierScreen
+import com.kastik.hci.ui.screens.view.CustomerScreen
+import com.kastik.hci.ui.screens.view.ProductScreen
+import com.kastik.hci.ui.screens.view.SupplierScreen
+import com.kastik.hci.ui.screens.view.TransactionScreen
 import com.kastik.hci.ui.theme.HCI_ComposeTheme
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -68,7 +80,17 @@ fun MainUI() {
     val drawerGestureEnabled = remember { mutableStateOf(true) }
     val showSelectionOnCard = remember { mutableStateOf(false) }
     val action = remember { mutableStateOf(CardActions.Empty) }
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    val selectedSupplierId = remember { mutableStateOf(0) }
     val selectedProductId = remember { mutableStateOf(0) }
+    val selectedTransactionId = remember { mutableStateOf("") }
+    val selectedCustomerId =  remember { mutableStateOf("") }
+
+    val dao = AppDatabase.getDatabase(LocalContext.current).AppDao()
+    val firestore = Firebase.firestore
+    val customerDb = firestore.collection("Customers")
+    val transactionDb = firestore.collection("Transactions")
 
     HCI_ComposeTheme {
         Surface {
@@ -89,13 +111,16 @@ fun MainUI() {
                                 action= action
                             )
                         },
+                        snackbarHost = {
+                            SnackbarHost(hostState = snackbarHostState)
+                        },
                     ){ paddingValues ->
                         NavHost(
                             navController = navController,
-                            startDestination = AvailableScreens.MainScreen.name,
+                            startDestination = AvailableScreens.HomeScreen.name,
                             Modifier.padding(paddingValues)
                         ) {
-                            composable(AvailableScreens.MainScreen.name) {
+                            composable(AvailableScreens.HomeScreen.name) {
                                 LaunchedEffect(drawerState) {
                                     drawerState.close()
                                 }
@@ -103,9 +128,10 @@ fun MainUI() {
                                 selectedItem.value = 1
                                 dropDownState.value = false
                                 drawerGestureEnabled.value = true
+                                showSelectionOnCard.value = false
                                 HomeScreen()
                             }
-                            composable(AvailableScreens.LocalDatabaseScreen.name) {
+                            composable(AvailableScreens.SupplierScreen.name) {
                                 LaunchedEffect(drawerState) {
                                     drawerState.close()
                                 }
@@ -113,9 +139,10 @@ fun MainUI() {
                                 selectedItem.value = 2
                                 dropDownState.value = true
                                 drawerGestureEnabled.value = true
-                                LocalDataViewScreen(showSelectionOnCard,action,selectedProductId,navController)
+                                showSelectionOnCard.value = false
+                                SupplierScreen(dao,showSelectionOnCard,action,selectedSupplierId,navController,snackbarHostState)
                             }
-                            composable(AvailableScreens.RemoteDatabaseScreen.name) {
+                            composable(AvailableScreens.ProductScreen.name) {
                                 LaunchedEffect(drawerState) {
                                     drawerState.close()
                                 }
@@ -123,26 +150,70 @@ fun MainUI() {
                                 selectedItem.value = 3
                                 dropDownState.value = true
                                 drawerGestureEnabled.value = true
-                                RemoteDataViewScreen()
+                                showSelectionOnCard.value = false
+                                ProductScreen(dao,showSelectionOnCard,action,selectedProductId,navController,snackbarHostState)
                             }
-                            composable(AvailableScreens.InsertProducScreen.name) {
+                            composable(AvailableScreens.CustomerScreen.name) {
+                                LaunchedEffect(drawerState) {
+                                    drawerState.close()
+                                }
+                                topBarState.value = true
+                                selectedItem.value = 4
+                                dropDownState.value = true
+                                drawerGestureEnabled.value = true
+                                showSelectionOnCard.value = false
+                                CustomerScreen(customerDb,showSelectionOnCard,action,selectedCustomerId,navController,snackbarHostState)
+                            }
+                            composable(AvailableScreens.TransactionScreen.name) {
+                                LaunchedEffect(drawerState) {
+                                    drawerState.close()
+                                }
+                                topBarState.value = true
+                                selectedItem.value = 5
+                                dropDownState.value = true
+                                drawerGestureEnabled.value = true
+                                showSelectionOnCard.value = false
+                                TransactionScreen(showSelectionOnCard,action,selectedTransactionId,navController,snackbarHostState)
+                            }
+                            composable(AvailableScreens.CreateSupplierScreen.name) {
                                 topBarState.value = false
                                 drawerGestureEnabled.value = false
-                                Log.d("MyLog","Insert")
-                                InsertLocal(productId = null)
+                                showSelectionOnCard.value = false
+                                CreateSupplierScreen(dao,snackbarHostState,navController)
+                            }
+                            composable(AvailableScreens.CreateProductScreen.name){ //TODO
+                                topBarState.value = false
+                                drawerGestureEnabled.value = false
+                                showSelectionOnCard.value = false
+                                CreateProductScreen(dao,snackbarHostState,navController)
 
                             }
-                            composable(AvailableScreens.EditProductScreen.name){ //TODO
+                            composable(AvailableScreens.CreateCustomerScreen.name) {
                                 topBarState.value = false
                                 drawerGestureEnabled.value = false
-                                Log.d("MyLog","Edit with id ${it.arguments?.getInt("productId")}")
-                                InsertLocal(productId = selectedProductId.value)
+                                showSelectionOnCard.value = false
+                                CreateCustomerScreen(customerDb,snackbarHostState,navController)
 
                             }
-                            composable(AvailableScreens.InsertTransactionScreen.name) {
+                            composable(AvailableScreens.CreateTransactionScreen.name) {
                                 topBarState.value = false
                                 drawerGestureEnabled.value = false
-                                InsertRemoteScreen()
+                                showSelectionOnCard.value = false
+                                CreateTransactionScreen(transactionDb,customerDb,snackbarHostState,navController,dao)
+
+                            }
+                            composable(AvailableScreens.EditSupplierScreen.name) {
+                                topBarState.value = false
+                                drawerGestureEnabled.value = false
+                                showSelectionOnCard.value = false
+                                EditSupplierScreen(selectedSupplierId.value,dao,snackbarHostState)
+
+                            }
+                            composable(AvailableScreens.EditProductScreen.name) {
+                                topBarState.value = false
+                                drawerGestureEnabled.value = false
+                                showSelectionOnCard.value = false
+                                EditProductScreen(selectedProductId.value,dao,snackbarHostState)
 
                             }
                         }
@@ -161,34 +232,55 @@ fun DrawerSheet(navController: NavController, selectedItem: MutableState<Int>) {
         Text("Drawer title", modifier = Modifier.padding(16.dp))
         Divider()
         NavigationDrawerItem(
-            label = { Text(text = "Main") },
+            label = { Text(text = "Home") },
             selected = selectedItem.value == 1,
             onClick = {
-                navController.navigate(AvailableScreens.MainScreen.name) {
-                    popUpTo(AvailableScreens.MainScreen.name)
+                navController.navigate(AvailableScreens.HomeScreen.name) {
+                    popUpTo(AvailableScreens.HomeScreen.name)
                     launchSingleTop = true
                 }
             })
         Divider()
         NavigationDrawerItem(
-            label = { Text(text = "Local") },
+            label = { Text(text = "Supplier") },
             selected = selectedItem.value == 2,
             onClick = {
-                navController.navigate(AvailableScreens.LocalDatabaseScreen.name) {
-                    popUpTo(AvailableScreens.MainScreen.name)
+                navController.navigate(AvailableScreens.SupplierScreen.name) {
+                    popUpTo(AvailableScreens.HomeScreen.name)
                     launchSingleTop = true
                 }
             })
         Divider()
         NavigationDrawerItem(
-            label = { Text(text = "Drawer Item") },
+            label = { Text(text = "Products") },
             selected = selectedItem.value == 3,
             onClick = {
-                navController.navigate(AvailableScreens.RemoteDatabaseScreen.name) {
-                    popUpTo(AvailableScreens.MainScreen.name)
+                navController.navigate(AvailableScreens.ProductScreen.name) {
+                    popUpTo(AvailableScreens.HomeScreen.name)
                     launchSingleTop = true
                 }
             })
+        Divider()
+        NavigationDrawerItem(
+            label = { Text(text = "Customers") },
+            selected = selectedItem.value == 4,
+            onClick = {
+                navController.navigate(AvailableScreens.CustomerScreen.name) {
+                    popUpTo(AvailableScreens.HomeScreen.name)
+                    launchSingleTop = true
+                }
+            })
+        Divider()
+        NavigationDrawerItem(
+            label = { Text(text = "Transactions") },
+            selected = selectedItem.value == 5,
+            onClick = {
+                navController.navigate(AvailableScreens.TransactionScreen.name) {
+                    popUpTo(AvailableScreens.HomeScreen.name)
+                    launchSingleTop = true
+                }
+            })
+        Divider()
     }
 }
 
@@ -254,10 +346,11 @@ fun DropDownMenu(
             DropdownMenuItem(
                 text = { Text("Insert") }, onClick = {
                     expanded = false
-                    if(navController.currentDestination?.route== AvailableScreens.LocalDatabaseScreen.name){
-                        navController.navigate(AvailableScreens.InsertProducScreen.name)
-                    }else{
-                        navController.navigate(AvailableScreens.InsertTransactionScreen.name)
+                    when(navController.currentDestination?.route){
+                        AvailableScreens.ProductScreen.name -> navController.navigate(AvailableScreens.CreateProductScreen.name)
+                        AvailableScreens.SupplierScreen.name -> navController.navigate(AvailableScreens.CreateSupplierScreen.name)
+                        AvailableScreens.CustomerScreen.name -> navController.navigate(AvailableScreens.CreateCustomerScreen.name)
+                        AvailableScreens.TransactionScreen.name -> navController.navigate(AvailableScreens.CreateTransactionScreen.name)
                     }
                 }, leadingIcon = {
                     Icon(

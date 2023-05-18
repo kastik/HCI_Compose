@@ -1,16 +1,17 @@
 package com.kastik.hci.ui.screens
 
 enum class AvailableScreens {
-    MainScreen,
-    LocalDatabaseScreen,
-    RemoteDatabaseScreen,
-    InsertProducScreen,
+    HomeScreen,
+    ProductScreen,
+    SupplierScreen,
+    TransactionScreen,
+    CustomerScreen,
+    CreateProductScreen,
+    CreateSupplierScreen,
+    CreateTransactionScreen,
+    CreateCustomerScreen,
     EditProductScreen,
-    InsertTransactionScreen,
-    EditTransactionScreen
+    EditSupplierScreen,
+    EditTransactionScreen,
+    EditCustomerScreen
 }
-
-
-
-
-

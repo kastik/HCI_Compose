@@ -1,6 +1,6 @@
 -printusage
--keep class com.kastik.hci.database.CustomerData*
--keep class com.kastik.hci.database.Transactions*
+-keep class com.kastik.hci.data.CustomerData*
+-keep class com.kastik.hci.data.Transactions*
 
 -keepattributes LineNumberTable,SourceFile
 -renamesourcefileattribute SourceFile

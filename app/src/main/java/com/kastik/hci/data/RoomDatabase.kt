@@ -1,4 +1,4 @@
-package com.kastik.hci.database
+package com.kastik.hci.data
 
 import android.content.Context
 import androidx.room.Dao
@@ -85,7 +85,7 @@ data class Stock(
 @Dao
 interface AppDao {
     @Insert
-    fun insertSupplier(supplier: Supplier)
+    fun insertSupplier(supplier: Supplier) : Long
     @Insert
     fun insertStock(stock: Stock) : Long
     @Insert
@@ -106,11 +106,15 @@ interface AppDao {
    fun getSupplierInfo(supplierId: Int): Supplier
 
    @Query("SELECT * FROM Stock WHERE :stockId==Stock.Stockid")
-   fun getStockOfProduct(stockId: Int): Stock
+   fun getStockOfProduct(stockId: Int?): Stock
 
 
    @Query("SELECT * FROM Product WHERE :productId==Product.ProductId")
-   fun getProductWithId(productId: Int?) :Product?
+   fun getProductWithId(productId: Int?) :Product
+
+
+   @Query("SELECT * FROM SUPPLIER WHERE :supplierId==Supplier.SupplierId")
+    fun getSupplierWithId(supplierId: Int): Supplier
 
     //@Query("SELECT * FROM Supplier LEFT JOIN Product ON Supplier.SupplierId==Product.SupplierId AND Product.ProductId==:productId")
     //fun getSupplierOfProduct(productId: Int): Flow<Supplier>
@@ -124,10 +128,21 @@ interface AppDao {
      */
 
     @Delete
-    fun deleteProduct(product: Product)
+    fun deleteProduct(product: Product) :Int
+
+    @Delete
+    fun deleteSupplier(supplier: Supplier) :Int
+
+    @Delete
+    fun deleteStock(stock: Stock) :Int
+    @Update
+    fun updateProduct(product: Product) :Int
 
     @Update
-    fun updateProduct(product: Product)
+    fun updateStock(stock: Stock) :Int
+
+    @Update
+    fun updateSupplier(supplier: Supplier) : Int
 
     //TODO Add @Update fun
     //TODO ADD suspend fun on UPDATE DELETE AND MODIFY

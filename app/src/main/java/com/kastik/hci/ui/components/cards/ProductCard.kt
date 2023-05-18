@@ -1,7 +1,8 @@
-package com.kastik.hci.ui.components
+package com.kastik.hci.ui.components.cards
 
-import android.util.Log
+import android.annotation.SuppressLint
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -16,54 +17,80 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import com.google.firebase.firestore.ktx.firestore
-import com.google.firebase.ktx.Firebase
-import com.kastik.hci.database.AppDatabase
-import com.kastik.hci.database.CustomerData
-import com.kastik.hci.database.Product
-import com.kastik.hci.database.Stock
-import com.kastik.hci.database.Supplier
-import com.kastik.hci.database.Transactions
+import androidx.navigation.compose.rememberNavController
+import com.kastik.hci.data.AppDao
+import com.kastik.hci.data.AppDatabase
+import com.kastik.hci.data.Product
+import com.kastik.hci.data.Stock
+import com.kastik.hci.data.Supplier
 import com.kastik.hci.ui.screens.AvailableScreens
+import com.kastik.hci.ui.theme.HCI_ComposeTheme
 import com.kastik.hci.utils.modifierBasedOnAction
+import kotlinx.coroutines.launch
 
 
-enum class CardActions { Empty, Delete, Modify }
+@SuppressLint("UnrememberedMutableState")
+@Preview
+@Composable
+fun ProductCardPreview(){
+    HCI_ComposeTheme() {
+        Surface() {
+            ProductCard(
+                mutableStateOf(0),
+                Product(1,1,1,"Pixel 2 XL","Google",100,"The latest phone from google"),
+                Stock(1,20),
+                Supplier(1,"",""),
+                mutableStateOf(true),
+                mutableStateOf(CardActions.Empty),
+                AppDatabase.getDatabase(LocalContext.current).AppDao(),
+                rememberNavController(),
+                SnackbarHostState()
+            )
+        }
+    }
+
+}
 
 @Composable
-fun LocalDatabaseCard(
+fun ProductCard(
+    selectedProductId: MutableState<Int>,
     product: Product,
     stock: Stock,
     supplier: Supplier,
     actionsEnabled: MutableState<Boolean>,
     action: MutableState<CardActions>,
+    dao: AppDao,
     navController: NavController,
-    selectedProductId: MutableState<Int>
+    snackbarHostState: SnackbarHostState,
+
 
     //,onClick: () -> Unit
 ) {
     val database = AppDatabase.getDatabase(LocalContext.current).AppDao()
+    val scope = rememberCoroutineScope()
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .padding(10.dp)
-            .height(IntrinsicSize.Min)
-        //shape = MaterialTheme.shapes.large,
-        //border = BorderStroke(2.dp,MaterialTheme.colorScheme.inversePrimary),
-        //elevation = CardDefaults.cardElevation(defaultElevation = 10.dp)
+            .height(IntrinsicSize.Min),
+        shape = MaterialTheme.shapes.large,
+        border = BorderStroke(2.dp,MaterialTheme.colorScheme.inversePrimary),
+        elevation = CardDefaults.cardElevation(defaultElevation = 10.dp)
     ) {
         Row {
             AnimatedVisibility(visible = actionsEnabled.value) {
@@ -75,8 +102,14 @@ fun LocalDatabaseCard(
                         .clickable(
                             // enabled = actionsEnabled.value,
                             onClick = {
+
                                 if (action.value == CardActions.Delete && actionsEnabled.value) {
-                                    database.deleteProduct(product)
+                                    if (0 < database.deleteProduct(product)) {
+                                        scope.launch { snackbarHostState.showSnackbar("Success!") }
+                                    } else {
+                                        scope.launch { snackbarHostState.showSnackbar("Something Happened Try Again") }
+                                    }
+
                                 } else {
                                     if (action.value == CardActions.Modify && actionsEnabled.value) {
                                         selectedProductId.value = product.ProductId
@@ -107,8 +140,10 @@ fun LocalDatabaseCard(
                 Text(text = "Manufacturer", style = (MaterialTheme.typography.labelSmall))
                 Text(text = product.ProductManufacturer)
                 Spacer(modifier = Modifier.padding(5.dp))
-                Text(text = "Description", style = (MaterialTheme.typography.labelSmall))
-                Text(text = product.ProductDescription)
+                Spacer(modifier = Modifier.padding(5.dp))
+                Text(text = "Stock Quantity", style = (MaterialTheme.typography.labelSmall))
+                Text(text = stock.Stock.toString())
+
                 Spacer(modifier = Modifier.padding(5.dp))
 
             }
@@ -117,74 +152,11 @@ fun LocalDatabaseCard(
                     .weight(1f)
                     .padding(5.dp)
             ) {
-                Text(text = "Supplier", style = (MaterialTheme.typography.labelSmall))
-                Text(text = supplier.Name)
+                Text(text = "Description", style = (MaterialTheme.typography.labelSmall))
+                Text(text = product.ProductDescription)
                 Spacer(modifier = Modifier.padding(5.dp))
-                Text(text = "Supplier Location", style = (MaterialTheme.typography.labelSmall))
-                Text(text = supplier.Location)
-                Spacer(modifier = Modifier.padding(5.dp))
-                Text(text = "Stock Quantity", style = (MaterialTheme.typography.labelSmall))
-                Text(text = stock.Stock.toString())
+
             }
-        }
-
-    }
-}
-
-@Composable
-fun RemoteDatabaseCard(
-    transactions: Transactions
-) {
-    var customerData by remember { mutableStateOf(CustomerData()) }
-
-
-    val q = Firebase.firestore.collection("Customers")
-        .whereEqualTo("customerId",transactions.customerId)
-        .get()
-        .addOnSuccessListener { documents ->
-            for (document in documents) {
-                customerData = (document.toObject(CustomerData::class.java))
-                Log.d("MyLog", "${document.data}")
-                Log.d("MyLog", document.id)
-            }
-        }
-    Log.d("Mylog","Exited")
-    var expand = remember { false }
-    Card(
-        shape = MaterialTheme.shapes.large,
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(10.dp)
-            .height(IntrinsicSize.Min)
-            .clickable(onClick = {
-                expand = !expand
-            })
-        //shape = MaterialTheme.shapes.large,
-        //border = BorderStroke(2.dp,MaterialTheme.colorScheme.inversePrimary),
-        //elevation = CardDefaults.cardElevation(defaultElevation = 10.dp)
-    ) {
-        Column(
-            Modifier
-                .weight(1f)
-                .padding(5.dp)
-        ) {
-            Text(text = "Products Sold", style = (MaterialTheme.typography.labelSmall))
-            Text(text = transactions.quantity.toString())
-            Spacer(modifier = Modifier.padding(5.dp))
-            Text(text = "Product Id", style = (MaterialTheme.typography.labelSmall))
-            Text(text = transactions.product)
-        }
-        Column(
-            Modifier
-                .weight(1f)
-                .padding(5.dp)
-        ) {
-            Text(text = "Customer Name", style = (MaterialTheme.typography.labelSmall))
-            Text(text = customerData.customerName)
-            Spacer(modifier = Modifier.padding(5.dp))
-            Text(text = "Customer Lastname", style = (MaterialTheme.typography.labelSmall))
-            Text(text = customerData.customerLastName)
-            Spacer(modifier = Modifier.padding(5.dp))
         }
 
     }
