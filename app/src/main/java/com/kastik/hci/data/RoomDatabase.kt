@@ -1,4 +1,4 @@
-package com.kastik.hci.database
+package com.kastik.hci.data
 
 import android.content.Context
 import androidx.room.Dao
@@ -11,6 +11,7 @@ import androidx.room.PrimaryKey
 import androidx.room.Query
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import androidx.room.Update
 import kotlinx.coroutines.flow.Flow
 
 @Database(entities = [Product::class,Stock::class,Supplier::class], version = 1)
@@ -29,7 +30,7 @@ abstract class AppDatabase : RoomDatabase() {
                         AppDatabase::class.java,
                         "Database.db"
                     )
-                        .fallbackToDestructiveMigration()
+                        //.fallbackToDestructiveMigration()
                         .allowMainThreadQueries() //TODO Remove at some point
                         .build()
 
@@ -56,7 +57,9 @@ data class Supplier(
     val Location: String
 )
 
-@Entity(foreignKeys = [ForeignKey(entity = Supplier::class, childColumns = ["SupplierId"], parentColumns = ["SupplierId"]),ForeignKey(entity = Supplier::class, childColumns = ["SupplierId"], parentColumns = ["SupplierId"])])
+@Entity(foreignKeys =
+[ForeignKey(entity = Supplier::class, childColumns = ["SupplierId"], parentColumns = ["SupplierId"],onDelete = ForeignKey.CASCADE),
+    ForeignKey(entity = Stock::class, childColumns = ["StockId"], parentColumns = ["StockId"],onDelete = ForeignKey.CASCADE)])
 data class Product(
     @PrimaryKey(autoGenerate = true)
     val ProductId: Int = 0,
@@ -82,7 +85,7 @@ data class Stock(
 @Dao
 interface AppDao {
     @Insert
-    fun insertSupplier(supplier: Supplier)
+    fun insertSupplier(supplier: Supplier) : Long
     @Insert
     fun insertStock(stock: Stock) : Long
     @Insert
@@ -103,8 +106,15 @@ interface AppDao {
    fun getSupplierInfo(supplierId: Int): Supplier
 
    @Query("SELECT * FROM Stock WHERE :stockId==Stock.Stockid")
-   fun getStockOfProduct(stockId: Int): Stock
+   fun getStockOfProduct(stockId: Int?): Stock
 
+
+   @Query("SELECT * FROM Product WHERE :productId==Product.ProductId")
+   fun getProductWithId(productId: Int?) :Product
+
+
+   @Query("SELECT * FROM SUPPLIER WHERE :supplierId==Supplier.SupplierId")
+    fun getSupplierWithId(supplierId: Int): Supplier
 
     //@Query("SELECT * FROM Supplier LEFT JOIN Product ON Supplier.SupplierId==Product.SupplierId AND Product.ProductId==:productId")
     //fun getSupplierOfProduct(productId: Int): Flow<Supplier>
@@ -118,7 +128,21 @@ interface AppDao {
      */
 
     @Delete
-    fun deleteProduct(product: Product)
+    fun deleteProduct(product: Product) :Int
+
+    @Delete
+    fun deleteSupplier(supplier: Supplier) :Int
+
+    @Delete
+    fun deleteStock(stock: Stock) :Int
+    @Update
+    fun updateProduct(product: Product) :Int
+
+    @Update
+    fun updateStock(stock: Stock) :Int
+
+    @Update
+    fun updateSupplier(supplier: Supplier) : Int
 
     //TODO Add @Update fun
     //TODO ADD suspend fun on UPDATE DELETE AND MODIFY
