@@ -1,6 +1,7 @@
 package com.kastik.hci.data
 
 import android.content.Context
+import androidx.room.ColumnInfo
 import androidx.room.Dao
 import androidx.room.Database
 import androidx.room.Delete
@@ -63,7 +64,10 @@ data class Supplier(
 data class Product(
     @PrimaryKey(autoGenerate = true)
     val ProductId: Int = 0,
+
+    @ColumnInfo(index = true)
     val SupplierId: Int = 0,
+    @ColumnInfo(index = true)
     val StockId: Int = 0,
     val ProductName: String,
     val ProductManufacturer: String,

@@ -184,7 +184,7 @@ fun MainUI() {
                                 showSelectionOnCard.value = false
                                 CreateSupplierScreen(dao,snackbarHostState,navController)
                             }
-                            composable(AvailableScreens.CreateProductScreen.name){ //TODO
+                            composable(AvailableScreens.CreateProductScreen.name){
                                 topBarState.value = false
                                 drawerGestureEnabled.value = false
                                 showSelectionOnCard.value = false
