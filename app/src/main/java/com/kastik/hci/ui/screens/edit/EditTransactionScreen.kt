@@ -54,8 +54,8 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EditTransactionScreen(
-    transactionDb: CollectionReference,
     customerDb: CollectionReference,
+    transactionDb: CollectionReference,
     snackbarHostState: SnackbarHostState,
     navController: NavController,
     selectedTransactionId: MutableState<String>,
@@ -77,6 +77,8 @@ fun EditTransactionScreen(
             }
         }
     }
+
+
 
     val selectedCustomerText = remember { mutableStateOf("") }
     selectedCustomerText.value = if (customerData.isEmpty()) {
