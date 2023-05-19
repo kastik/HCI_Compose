@@ -128,25 +128,24 @@ fun TransactionCard(
                 Column(
                     Modifier
                         .weight(1f)
-                        .padding(5.dp)
+                        .padding(10.dp)
                 ) {
-                    Text(text = "Products Sold", style = (MaterialTheme.typography.labelSmall))
-                    Text(text = transaction.quantitySold.toString())
+                    Text(text = "Product", style = (MaterialTheme.typography.labelMedium))
+                    Text(text = transaction.productName,style = (MaterialTheme.typography.bodyLarge))
                     Spacer(modifier = Modifier.padding(5.dp))
-                    Text(text = "Product", style = (MaterialTheme.typography.labelSmall))
-                    Text(text = transaction.productName)
+                    Text(text = "Products Sold",style = (MaterialTheme.typography.labelMedium))
+                    Text(text = transaction.quantitySold.toString(),style = (MaterialTheme.typography.bodyLarge))
                 }
                 Column(
                     Modifier
                         .weight(1f)
-                        .padding(5.dp)
+                        .padding(10.dp)
                 ) {
-                    Text(text = "Customer Name", style = (MaterialTheme.typography.labelSmall))
-                    Text(text = customerData.customerName)
+                    Text(text = "Customer Name", style = (MaterialTheme.typography.labelMedium))
+                    Text(text = customerData.customerName,style = (MaterialTheme.typography.bodyLarge))
                     Spacer(modifier = Modifier.padding(5.dp))
-                    Text(text = "Customer Lastname", style = (MaterialTheme.typography.labelSmall))
-                    Text(text = customerData.customerLastName)
-                    Spacer(modifier = Modifier.padding(5.dp))
+                    Text(text = "Customer Lastname", style = (MaterialTheme.typography.labelMedium))
+                    Text(text = customerData.customerLastName,style = (MaterialTheme.typography.bodyLarge))
                 }
             }
         }

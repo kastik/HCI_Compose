@@ -91,16 +91,19 @@ fun CustomerCard(
                             onClick = {
 
                                 if (action.value == CardActions.Delete && actionsEnabled.value) {
-                                    customerDb.document(customer.customerId).delete()
+                                    customerDb
+                                        .document(customer.customerId)
+                                        .delete()
                                         .addOnSuccessListener {
                                             scope.launch { snackbarHostState.showSnackbar("Success!") }
-                                        }.addOnFailureListener {
-                                        scope.launch { snackbarHostState.showSnackbar("Something went wrong") }
-                                    }
+                                        }
+                                        .addOnFailureListener {
+                                            scope.launch { snackbarHostState.showSnackbar("Something went wrong") }
+                                        }
                                 }
-                                    if (action.value == CardActions.Modify && actionsEnabled.value) {
-                                        selectedCustomer.value = customer.customerId
-                                        navController.navigate(AvailableScreens.EditCustomerScreen.name)
+                                if (action.value == CardActions.Modify && actionsEnabled.value) {
+                                    selectedCustomer.value = customer.customerId
+                                    navController.navigate(AvailableScreens.EditCustomerScreen.name)
                                 }
                             }
                         ),
@@ -118,21 +121,21 @@ fun CustomerCard(
             Column(
                 Modifier
                     .weight(1f)
-                    .padding(5.dp)
+                    .padding(10.dp)
             ) {
-                Text(text = "Customer Name", style = (MaterialTheme.typography.labelSmall))
-                Text(text = customer.customerName)
+                Text(text = "Customer Name", style = (MaterialTheme.typography.labelMedium))
+                Text(text = customer.customerName,style = (MaterialTheme.typography.bodyLarge))
                 Spacer(modifier = Modifier.padding(5.dp))
-                Text(text = "Customer Last Name", style = (MaterialTheme.typography.labelSmall))
-                Text(text = customer.customerLastName)
-                Spacer(modifier = Modifier.padding(5.dp))
+                Text(text = "Customer Last Name", style = (MaterialTheme.typography.labelMedium))
+                Text(text = customer.customerLastName,style = (MaterialTheme.typography.bodyLarge))
             }
             Column(
                 Modifier
                     .weight(1f)
-                    .padding(5.dp)
+                    .padding(10.dp)
             ) {
-
+                Text(text = "Customer Id",style = (MaterialTheme.typography.labelMedium))
+                Text(text = customer.customerId,style = (MaterialTheme.typography.bodyLarge))
             }
         }
 

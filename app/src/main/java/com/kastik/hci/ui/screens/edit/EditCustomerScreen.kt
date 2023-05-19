@@ -45,11 +45,15 @@ fun EditCustomerScreen(
     var customerName by remember { mutableStateOf("") }
     var customerLastname by remember { mutableStateOf("") }
 
-    val customers = remember { mutableStateListOf<CustomerData>() }
+    val customer = remember { mutableStateListOf<CustomerData>() }
 
     LaunchedEffect(Unit) {
-        customerDb.document(selectedCustomerId.value).get().addOnSuccessListener { customer ->
-            customer.toObject(CustomerData::class.java)?.let { customers.add(it) }
+        customerDb.document(selectedCustomerId.value).get().addOnSuccessListener { customers ->
+            customers.toObject(CustomerData::class.java)?.let {
+                customer.add(it)
+                customerName= it.customerName
+                customerLastname = it.customerLastName
+            }
         }
     }
 
