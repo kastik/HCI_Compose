@@ -161,7 +161,9 @@ fun CreateTransactionScreen(
                     OutlinedTextField(
                         modifier = Modifier.menuAnchor().padding(10.dp),
                         value = selectedCustomerText.value,
-                        onValueChange = {},
+                        onValueChange = { newValue ->
+                            selectedCustomerText.value = newValue
+                        },
                         readOnly = true,
                         trailingIcon = {
                             ExposedDropdownMenuDefaults.TrailingIcon(
@@ -226,7 +228,9 @@ fun CreateTransactionScreen(
                     OutlinedTextField(
                         modifier = Modifier.menuAnchor().padding(10.dp),
                         value = selectedProductIdText.value,
-                        onValueChange = {},
+                        onValueChange = { newValue ->
+                            selectedProductIdText.value = newValue
+                        },
                         readOnly = true,
                         trailingIcon = {
                             ExposedDropdownMenuDefaults.TrailingIcon(

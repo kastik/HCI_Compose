@@ -5,9 +5,11 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Error
 import androidx.compose.material3.DropdownMenuItem
@@ -80,6 +82,7 @@ fun CreateProductScreen(
             .fillMaxWidth()
             .wrapContentHeight()
             .padding(horizontal = 16.dp)
+            .verticalScroll(rememberScrollState())
     ) {
         Text(
             modifier = Modifier
