@@ -47,8 +47,8 @@ import kotlinx.coroutines.launch
 @Preview
 @Composable
 fun ProductCardPreview(){
-    HCI_ComposeTheme() {
-        Surface() {
+    HCI_ComposeTheme {
+        Surface {
             ProductCard(
                 mutableStateOf(0),
                 Product(1,1,1,"Pixel 2 XL","Google",100,"The latest phone from google"),

@@ -47,13 +47,13 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun TransactionCard(
-    transactionId: MutableState<String>,
+    selectedTransactionId: MutableState<String>,
     transaction: Transaction,
     actionsEnabled: MutableState<Boolean>,
     action: MutableState<CardActions>,
     navController: NavController,
     snackbarHostState: SnackbarHostState,
-    customerDb: CollectionReference
+    customerDb: CollectionReference,
 )
 
 {
@@ -106,7 +106,7 @@ fun TransactionCard(
                                     }
                                 } else {
                                     if (action.value == CardActions.Modify && actionsEnabled.value) {
-                                        transactionId.value = transaction.transactionId
+                                        selectedTransactionId.value = transaction.transactionId
                                         navController.navigate(AvailableScreens.EditTransactionScreen.name)
                                     }
                                 }
@@ -124,7 +124,7 @@ fun TransactionCard(
             }
 
 
-            Row() {
+            Row {
                 Column(
                     Modifier
                         .weight(1f)

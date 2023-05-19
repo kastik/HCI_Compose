@@ -44,7 +44,7 @@ fun TransactionScreen(
     LazyColumn {
         itemsIndexed(items = myData) { index, transaction ->
             TransactionCard(
-                transactionId = selectedTransactionId,
+                selectedTransactionId = selectedTransactionId,
                 actionsEnabled = showSelectionOnCard,
                 action = action,
                 navController = navController,

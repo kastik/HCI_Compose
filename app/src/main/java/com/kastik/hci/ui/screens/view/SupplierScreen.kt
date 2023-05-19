@@ -23,7 +23,7 @@ fun SupplierScreen(
     snackbarHostState: SnackbarHostState,
 ) {
     val suppliers by dao.getAllSuppliers().collectAsState(initial = emptyList())
-    LazyColumn(){
+    LazyColumn {
         items(suppliers){
             SupplierCard(it,showSelectionOnCard,action,dao,snackbarHostState,navController,selectedSupplierId)
         }

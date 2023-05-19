@@ -28,7 +28,7 @@ fun HomePreview(){
 @Composable
 fun HomeScreen(dao: AppDao,firestoreDb: FirebaseFirestore) {
     val scope = rememberCoroutineScope()
-    Column() {
+    Column {
 
         Row(Modifier.padding(10.dp)) {
             Text(

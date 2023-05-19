@@ -232,7 +232,7 @@ fun MainUI() {
                                 topBarState.value = false
                                 drawerGestureEnabled.value = false
                                 showSelectionOnCard.value = false
-                                EditTransactionScreen(customerDb,transactionDb,snackbarHostState,navController,selectedCustomerId,dao)
+                                EditTransactionScreen(customerDb,transactionDb,snackbarHostState,navController,selectedTransactionId,dao)
                             }
                         }
                     }

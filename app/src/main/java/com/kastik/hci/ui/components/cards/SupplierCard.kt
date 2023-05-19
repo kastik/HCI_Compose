@@ -46,8 +46,8 @@ import kotlinx.coroutines.launch
 @Preview
 @Composable
 fun SupplierCardPreview(){
-    HCI_ComposeTheme() {
-        Surface() {
+    HCI_ComposeTheme {
+        Surface {
             SupplierCard(
                 supplier = Supplier(0,"",""),
                 actionsEnabled = mutableStateOf(false),

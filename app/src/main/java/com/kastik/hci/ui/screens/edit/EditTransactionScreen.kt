@@ -287,7 +287,7 @@ fun EditTransactionScreen(
                 if (!quantityError) {
                     transactionDb.document(selectedTransactionId.value).update(
                         mapOf(
-                            //"customerId" to selectedCustomer.value.customerId,
+                            "customerId" to selectedCustomer.value.customerId,
                             "productName" to selectedProduct.value.ProductName,
                             "quantitySold" to quantity.value.toInt(),
                             "productId" to selectedProduct.value.ProductId
