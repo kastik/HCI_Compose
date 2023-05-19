@@ -29,12 +29,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
-import com.kastik.hci.R
 import com.kastik.hci.data.AppDao
 import com.kastik.hci.data.AppDatabase
 import com.kastik.hci.data.Supplier
@@ -130,13 +128,13 @@ fun SupplierCard(
                     .padding(5.dp)
             ) {
                 Text(
-                    text = stringResource(R.string.SupplierName),
+                    text = "Supplier Name",
                     style = (MaterialTheme.typography.labelSmall)
                 )
                 Text(text = supplier.Name)
                 Spacer(modifier = Modifier.padding(5.dp))
                 Text(
-                    text = stringResource(R.string.SupplierLocation),
+                    text = "Supplier Location",
                     style = (MaterialTheme.typography.labelSmall)
                 )
                 Text(text = supplier.Location)

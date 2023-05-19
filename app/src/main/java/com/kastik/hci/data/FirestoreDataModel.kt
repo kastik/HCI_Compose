@@ -3,7 +3,7 @@ package com.kastik.hci.data
 import com.google.firebase.firestore.DocumentId
 
 data class CustomerData(
-    @DocumentId val customerId : String = "",
+    @DocumentId val customerId :String = "",
     val customerName: String = "",
     val customerLastName: String = ""
 )

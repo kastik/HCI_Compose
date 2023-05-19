@@ -29,17 +29,14 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
-import com.kastik.hci.R
 import com.kastik.hci.data.AppDao
 import com.kastik.hci.data.AppDatabase
 import com.kastik.hci.data.Product
 import com.kastik.hci.data.Stock
-import com.kastik.hci.data.Supplier
 import com.kastik.hci.ui.screens.AvailableScreens
 import com.kastik.hci.ui.theme.HCI_ComposeTheme
 import com.kastik.hci.utils.modifierBasedOnAction
@@ -56,7 +53,6 @@ fun ProductCardPreview(){
                 mutableStateOf(0),
                 Product(1,1,1,"Pixel 2 XL","Google",100,"The latest phone from google"),
                 Stock(1,20),
-                Supplier(1,"",""),
                 mutableStateOf(true),
                 mutableStateOf(CardActions.Empty),
                 AppDatabase.getDatabase(LocalContext.current).AppDao(),
@@ -73,7 +69,6 @@ fun ProductCard(
     selectedProductId: MutableState<Int>,
     product: Product,
     stock: Stock,
-    supplier: Supplier,
     actionsEnabled: MutableState<Boolean>,
     action: MutableState<CardActions>,
     dao: AppDao,
@@ -81,7 +76,6 @@ fun ProductCard(
     snackbarHostState: SnackbarHostState,
 ) {
     val scope = rememberCoroutineScope()
-    val database = AppDatabase.getDatabase(LocalContext.current).AppDao()
 
     Card(
         modifier = Modifier
@@ -103,7 +97,7 @@ fun ProductCard(
                             onClick = {
                                 scope.launch {
                                     if (action.value == CardActions.Delete && actionsEnabled.value) {
-                                        if (0 < database.deleteProduct(product)) {
+                                        if (0 < dao.deleteProduct(product)) {
                                             snackbarHostState.showSnackbar("Success!")
                                         } else {
                                             snackbarHostState.showSnackbar("Something Happened. Try Again.")
@@ -130,17 +124,17 @@ fun ProductCard(
                     .weight(1f)
                     .padding(5.dp)
             ) {
-                Text(text = stringResource(R.string.Product), style = (MaterialTheme.typography.labelSmall))
+                Text(text = "Product", style = (MaterialTheme.typography.labelSmall))
                 Text(text = product.ProductName)
                 Spacer(modifier = Modifier.padding(5.dp))
-                Text(text = stringResource(R.string.Manufacturer), style = (MaterialTheme.typography.labelSmall))
+                Text(text = "Manufacturer", style = (MaterialTheme.typography.labelSmall))
                 Text(text = product.ProductManufacturer)
                 Spacer(modifier = Modifier.padding(5.dp))
-                Spacer(modifier = Modifier.padding(5.dp))
-                Text(text = stringResource(R.string.Stock), style = (MaterialTheme.typography.labelSmall))
+                Text(text = "Stock", style = (MaterialTheme.typography.labelSmall))
                 Text(text = stock.Stock.toString())
-
                 Spacer(modifier = Modifier.padding(5.dp))
+                Text(text = "Price", style = (MaterialTheme.typography.labelSmall))
+                Text(text = product.ProductPrice.toString())
             }
 
             Column(
@@ -148,7 +142,7 @@ fun ProductCard(
                     .weight(1f)
                     .padding(5.dp)
             ) {
-                Text(text = stringResource(R.string.Description), style = (MaterialTheme.typography.labelSmall))
+                Text(text = "Description", style = (MaterialTheme.typography.labelSmall))
                 Text(text = product.ProductDescription)
                 Spacer(modifier = Modifier.padding(5.dp))
             }

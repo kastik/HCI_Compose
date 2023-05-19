@@ -27,7 +27,6 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -35,7 +34,6 @@ import androidx.navigation.compose.rememberNavController
 import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
-import com.kastik.hci.R
 import com.kastik.hci.data.CustomerData
 import com.kastik.hci.ui.screens.AvailableScreens
 import com.kastik.hci.utils.modifierBasedOnAction
@@ -121,10 +119,10 @@ fun CustomerCard(
                     .weight(1f)
                     .padding(5.dp)
             ) {
-                Text(text = stringResource(R.string.CustomerName), style = (MaterialTheme.typography.labelSmall))
+                Text(text = "Customer Name", style = (MaterialTheme.typography.labelSmall))
                 Text(text = customer.customerName)
                 Spacer(modifier = Modifier.padding(5.dp))
-                Text(text = stringResource(R.string.CustomerLastname), style = (MaterialTheme.typography.labelSmall))
+                Text(text = "Customer Last Name", style = (MaterialTheme.typography.labelSmall))
                 Text(text = customer.customerLastName)
                 Spacer(modifier = Modifier.padding(5.dp))
             }

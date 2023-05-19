@@ -40,13 +40,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.google.firebase.firestore.CollectionReference
-import com.kastik.hci.R
 import com.kastik.hci.data.AppDao
 import com.kastik.hci.data.CustomerData
 import com.kastik.hci.data.Product
@@ -82,16 +80,16 @@ fun EditTransactionScreen(
 
     val selectedCustomerText = remember { mutableStateOf("") }
     selectedCustomerText.value = if (customerData.isEmpty()) {
-        stringResource(R.string.InsertACustomer)
+        "Insert a customer first"
     } else {
-        stringResource(R.string.SelectACustomer)
+        "Select a customer"
     }
 
     val selectedProductIdText = remember { mutableStateOf("") }
     selectedProductIdText.value = if (productData.value.collectAsState(initial = emptyList()).value.isEmpty()) {
-        stringResource(R.string.InsertAProduct)
+        "Insert a product first"
     } else {
-        stringResource(R.string.SelectAProduct)
+        "Select a product"
     }
 
     val selectedCustomer = remember { mutableStateOf(CustomerData()) }
@@ -130,7 +128,7 @@ fun EditTransactionScreen(
                 if (quantityError) {
                     Text(
                         modifier = Modifier.fillMaxWidth(),
-                        text = stringResource(R.string.numberFormatError),
+                        text = "Please provide only numbers",
                         color = MaterialTheme.colorScheme.error
                     )
                 }
@@ -212,7 +210,7 @@ fun EditTransactionScreen(
             ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Text(
-                        text = stringResource(R.string.stockError),
+                        text = "There isn't enough stock for this transaction",
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onError
                     )
@@ -287,7 +285,7 @@ fun EditTransactionScreen(
                 if (!quantityError) {
                     transactionDb.document(selectedTransactionId.value).update(
                         mapOf(
-                            "customerId" to selectedCustomer.value.customerId,
+                            //"customerId" to selectedCustomer.value.customerId,
                             "productName" to selectedProduct.value.ProductName,
                             "quantitySold" to quantity.value.toInt(),
                             "productId" to selectedProduct.value.ProductId
@@ -301,7 +299,7 @@ fun EditTransactionScreen(
                 }
             }
         ) {
-            Text(stringResource(R.string.insert))
+            Text("Insert")
         }
     }
 }

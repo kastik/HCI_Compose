@@ -58,11 +58,8 @@ fun TransactionCard(
 {
     val scope = rememberCoroutineScope()
     var customerData by remember { mutableStateOf(CustomerData()) }
-    var transactionData by remember { mutableStateOf(Transaction()) }
 
 
-
-    val customerDb = Firebase.firestore.collection("Customers")
     customerDb.whereEqualTo(transaction.transactionId,transactionId.value)
         .get()
         .addOnSuccessListener { documents ->
@@ -72,17 +69,7 @@ fun TransactionCard(
         }
 
 
-
     val transactionDb = Firebase.firestore.collection("Transactions")
-    /*
-    transactionDb.whereEqualTo(FieldPath.documentId(),transactionId.value)
-        .get()
-        .addOnSuccessListener { documents ->
-            for (document in documents) {
-                transactionData = (document.toObject(Transaction::class.java))
-            }
-        }
-     */
 
     Card(
         modifier = Modifier

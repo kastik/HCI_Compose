@@ -3,7 +3,6 @@ package com.kastik.hci.ui.screens.view
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
@@ -23,17 +22,15 @@ fun ProductScreen(
     navController: NavController,
     snackbarHostState: SnackbarHostState
 ) {
-    val lazyListState = rememberLazyListState()
+    //val lazyListState = rememberLazyListState()
     val products = dao.getAllProducts().collectAsState(initial = emptyList())
-    val stocks = dao.getAllStocks().collectAsState(initial = emptyList())
-    val suppliers = dao.getAllSuppliers().collectAsState(initial = emptyList())
+
 
     LazyColumn(Modifier.fillMaxSize()) {
         items(products.value) { item ->
             ProductCard(
                 product = item,
                 stock = dao.getStockOfProduct(item.StockId),
-                supplier = dao.getSupplierWithId(item.SupplierId),
                 actionsEnabled = showSelectionOnCard,
                 action = action,
                 navController = navController,
