@@ -71,8 +71,8 @@ fun EditTransactionScreen(
     val customerData = remember { mutableStateListOf<CustomerData>() }
 
     LaunchedEffect(Unit) {
-        customerDb.get().addOnSuccessListener { querySnapshot ->
-            for (customer in querySnapshot) {
+        customerDb.get().addOnSuccessListener { customers ->
+            for (customer in customers) {
                 customerData.add(customer.toObject(CustomerData::class.java))
             }
         }

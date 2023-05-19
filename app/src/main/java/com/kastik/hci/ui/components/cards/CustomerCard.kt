@@ -91,15 +91,16 @@ fun CustomerCard(
                             onClick = {
 
                                 if (action.value == CardActions.Delete && actionsEnabled.value) {
-                                    customerDb.document(customer.customerId).delete().addOnSuccessListener {
-                                        scope.launch { snackbarHostState.showSnackbar("Success!") }
-                                    }.addOnFailureListener{
+                                    customerDb.document(customer.customerId).delete()
+                                        .addOnSuccessListener {
+                                            scope.launch { snackbarHostState.showSnackbar("Success!") }
+                                        }.addOnFailureListener {
                                         scope.launch { snackbarHostState.showSnackbar("Something went wrong") }
                                     }
+                                }
                                     if (action.value == CardActions.Modify && actionsEnabled.value) {
                                         selectedCustomer.value = customer.customerId
                                         navController.navigate(AvailableScreens.EditCustomerScreen.name)
-                                    }
                                 }
                             }
                         ),

@@ -48,10 +48,8 @@ fun EditCustomerScreen(
     val customers = remember { mutableStateListOf<CustomerData>() }
 
     LaunchedEffect(Unit) {
-        customerDb.get().addOnSuccessListener { querySnapshot ->
-            for (customer in querySnapshot) {
-                customers.add(customer.toObject(CustomerData::class.java))
-            }
+        customerDb.document(selectedCustomerId.value).get().addOnSuccessListener { customer ->
+            customer.toObject(CustomerData::class.java)?.let { customers.add(it) }
         }
     }
 
