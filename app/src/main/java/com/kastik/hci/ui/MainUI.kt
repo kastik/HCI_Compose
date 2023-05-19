@@ -3,7 +3,7 @@ package com.kastik.hci.ui
 import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
@@ -20,6 +20,7 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.NavigationDrawerItem
@@ -245,9 +246,9 @@ fun MainUI() {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DrawerSheet(navController: NavController, selectedItem: MutableState<Int>) {
-    ModalDrawerSheet {
-        Modifier.size(50.dp)
-        Text("Drawer title", modifier = Modifier.padding(16.dp))
+    ModalDrawerSheet( modifier = Modifier.width(300.dp)) {
+
+        Text("Our Shop", modifier = Modifier.padding(20.dp), style = MaterialTheme.typography.headlineLarge)
         Divider()
         NavigationDrawerItem(
             label = { Text(text = "Home") },
@@ -317,7 +318,7 @@ fun MyTopBar(
         CenterAlignedTopAppBar(
             title = {
                 Text(
-                    "OurShop", maxLines = 1, overflow = TextOverflow.Ellipsis
+                    "Our Shop", maxLines = 1, overflow = TextOverflow.Ellipsis
                 )
             },
             navigationIcon = {

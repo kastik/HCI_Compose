@@ -43,7 +43,7 @@ fun HomeScreen(dao: AppDao,firestoreDb: FirebaseFirestore) {
             Text(
                 modifier = Modifier
                     .padding(10.dp),
-                style = MaterialTheme.typography.headlineSmall,
+                style = MaterialTheme.typography.bodyMedium,
                 text = "Products in warehouse"
             )
         }
@@ -51,13 +51,13 @@ fun HomeScreen(dao: AppDao,firestoreDb: FirebaseFirestore) {
 
             Text(modifier = Modifier
                 .padding(10.dp),
-                style = MaterialTheme.typography.headlineSmall,
+                style = MaterialTheme.typography.bodyMedium,
                 text = "Suppliers ")
         }
         Row(Modifier.padding(10.dp)) {
             Text(modifier = Modifier
                 .padding(10.dp),
-                style = MaterialTheme.typography.headlineSmall,
+                style = MaterialTheme.typography.bodyMedium,
                 text = "Total Customers Sold")
 
         }
