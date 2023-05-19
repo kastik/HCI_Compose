@@ -33,7 +33,7 @@ fun ProductScreen(
             ProductCard(
                 product = item,
                 stock = dao.getStockOfProduct(item.StockId),
-                supplier = dao.getSupplierInfo(item.SupplierId),
+                supplier = dao.getSupplierWithId(item.SupplierId),
                 actionsEnabled = showSelectionOnCard,
                 action = action,
                 navController = navController,

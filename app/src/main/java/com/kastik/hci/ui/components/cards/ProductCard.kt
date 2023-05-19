@@ -79,19 +79,17 @@ fun ProductCard(
     dao: AppDao,
     navController: NavController,
     snackbarHostState: SnackbarHostState,
-
-
-    //,onClick: () -> Unit
 ) {
-    val database = AppDatabase.getDatabase(LocalContext.current).AppDao()
     val scope = rememberCoroutineScope()
+    val database = AppDatabase.getDatabase(LocalContext.current).AppDao()
+
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .padding(10.dp)
             .height(IntrinsicSize.Min),
         shape = MaterialTheme.shapes.large,
-        border = BorderStroke(2.dp,MaterialTheme.colorScheme.inversePrimary),
+        border = BorderStroke(2.dp, MaterialTheme.colorScheme.inversePrimary),
         elevation = CardDefaults.cardElevation(defaultElevation = 10.dp)
     ) {
         Row {
@@ -102,18 +100,15 @@ fun ProductCard(
                         .then(modifierBasedOnAction(action))
                         .padding(5.dp)
                         .clickable(
-                            // enabled = actionsEnabled.value,
                             onClick = {
-
-                                if (action.value == CardActions.Delete && actionsEnabled.value) {
-                                    if (0 < database.deleteProduct(product)) {
-                                        scope.launch { snackbarHostState.showSnackbar("Success!") }
-                                    } else {
-                                        scope.launch { snackbarHostState.showSnackbar("Something Happened Try Again") }
-                                    }
-
-                                } else {
-                                    if (action.value == CardActions.Modify && actionsEnabled.value) {
+                                scope.launch {
+                                    if (action.value == CardActions.Delete && actionsEnabled.value) {
+                                        if (0 < database.deleteProduct(product)) {
+                                            snackbarHostState.showSnackbar("Success!")
+                                        } else {
+                                            snackbarHostState.showSnackbar("Something Happened. Try Again.")
+                                        }
+                                    } else if (action.value == CardActions.Modify && actionsEnabled.value) {
                                         selectedProductId.value = product.ProductId
                                         navController.navigate(AvailableScreens.EditProductScreen.name)
                                     }
@@ -122,13 +117,12 @@ fun ProductCard(
                         ),
                     verticalArrangement = Arrangement.Center
                 ) {
-                    if(action.value== CardActions.Delete) {
+                    if (action.value == CardActions.Delete) {
                         Icon(Icons.Filled.Delete, contentDescription = "Delete the item")
-                    }else{
+                    } else {
                         Icon(Icons.Filled.Edit, contentDescription = "Edit the item")
                     }
                 }
-                //Checkbox(checked = checked.value, onCheckedChange = { checked.value = !checked.value })
             }
 
             Column(
@@ -147,8 +141,8 @@ fun ProductCard(
                 Text(text = stock.Stock.toString())
 
                 Spacer(modifier = Modifier.padding(5.dp))
-
             }
+
             Column(
                 Modifier
                     .weight(1f)
@@ -157,9 +151,7 @@ fun ProductCard(
                 Text(text = stringResource(R.string.Description), style = (MaterialTheme.typography.labelSmall))
                 Text(text = product.ProductDescription)
                 Spacer(modifier = Modifier.padding(5.dp))
-
             }
         }
-
     }
 }

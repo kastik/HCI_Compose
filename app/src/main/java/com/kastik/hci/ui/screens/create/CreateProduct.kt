@@ -4,7 +4,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -46,7 +46,11 @@ import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CreateProductScreen(dao: AppDao, snackbarHostState: SnackbarHostState,navController: NavController) {
+fun CreateProductScreen(
+    dao: AppDao,
+    snackbarHostState: SnackbarHostState,
+    navController: NavController
+) {
     val productName = remember { mutableStateOf("") }
     val manufacturer = remember { mutableStateOf("") }
     val price = remember { mutableStateOf("") }
@@ -54,21 +58,17 @@ fun CreateProductScreen(dao: AppDao, snackbarHostState: SnackbarHostState,navCon
     val stock = remember { mutableStateOf("") }
     val focusManager = LocalFocusManager.current
 
-
-
     var expanded by remember { mutableStateOf(false) }
     val supplierNames = dao.getAllSuppliers().collectAsState(initial = emptyList())
-    var selectedText = remember { mutableStateOf("")}
+    var selectedText = remember { mutableStateOf("") }
 
-    selectedText.value = if(supplierNames.value.isEmpty()){
+    selectedText.value = if (supplierNames.value.isEmpty()) {
         "Insert A Supplier First"
-    }
-    else{
+    } else {
         "Select A Supplier"
     }
 
-    val selectedSupplier = remember { mutableStateOf(Supplier(0,"","")) }
-
+    val selectedSupplier = remember { mutableStateOf(Supplier(0, "", "")) }
 
     var priceError by rememberSaveable { mutableStateOf(false) }
     var quantityError by rememberSaveable { mutableStateOf(false) }
@@ -78,10 +78,8 @@ fun CreateProductScreen(dao: AppDao, snackbarHostState: SnackbarHostState,navCon
     Column(
         Modifier
             .fillMaxWidth()
-            .wrapContentSize()
-        //.fillMaxHeight()
-        //.verticalScroll(rememberScrollState())
-
+            .wrapContentHeight()
+            .padding(horizontal = 16.dp)
     ) {
         Text(
             modifier = Modifier
@@ -90,6 +88,7 @@ fun CreateProductScreen(dao: AppDao, snackbarHostState: SnackbarHostState,navCon
             style = MaterialTheme.typography.headlineSmall,
             text = "Insert A Product"
         )
+
         OutlinedTextField(
             shape = RoundedCornerShape(15.dp),
             modifier = Modifier
@@ -102,10 +101,11 @@ fun CreateProductScreen(dao: AppDao, snackbarHostState: SnackbarHostState,navCon
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
             keyboardActions = KeyboardActions(onDone = {
                 focusManager.moveFocus(FocusDirection.Down)
-                //focusRequester.requestFocus()
             })
         )
+
         Spacer(modifier = Modifier.padding(10.dp))
+
         OutlinedTextField(
             shape = RoundedCornerShape(15.dp),
             modifier = Modifier
@@ -118,10 +118,11 @@ fun CreateProductScreen(dao: AppDao, snackbarHostState: SnackbarHostState,navCon
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
             keyboardActions = KeyboardActions(onDone = {
                 focusManager.moveFocus(FocusDirection.Down)
-                //focusRequester.requestFocus()
             })
         )
+
         Spacer(modifier = Modifier.padding(10.dp))
+
         OutlinedTextField(
             shape = RoundedCornerShape(15.dp),
             modifier = Modifier
@@ -149,14 +150,15 @@ fun CreateProductScreen(dao: AppDao, snackbarHostState: SnackbarHostState,navCon
             ),
             keyboardActions = KeyboardActions(onDone = {
                 focusManager.moveFocus(FocusDirection.Down)
-                //focusRequester.requestFocus()
             }),
             trailingIcon = {
                 if (quantityError)
                     Icon(Icons.Filled.Error, "error", tint = MaterialTheme.colorScheme.error)
             }
         )
+
         Spacer(modifier = Modifier.padding(10.dp))
+
         OutlinedTextField(
             shape = RoundedCornerShape(15.dp),
             modifier = Modifier
@@ -169,10 +171,11 @@ fun CreateProductScreen(dao: AppDao, snackbarHostState: SnackbarHostState,navCon
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
             keyboardActions = KeyboardActions(onDone = {
                 focusManager.moveFocus(FocusDirection.Down)
-                //focusRequester.requestFocus()
             })
         )
+
         Spacer(modifier = Modifier.padding(10.dp))
+
         OutlinedTextField(
             isError = quantityError,
             supportingText = {
@@ -200,25 +203,28 @@ fun CreateProductScreen(dao: AppDao, snackbarHostState: SnackbarHostState,navCon
             ),
             keyboardActions = KeyboardActions(onDone = {
                 focusManager.clearFocus()
-                //focusRequester.requestFocus()
             }),
             trailingIcon = {
                 if (quantityError)
                     Icon(Icons.Filled.Error, "error", tint = MaterialTheme.colorScheme.error)
             }
         )
+
         Spacer(modifier = Modifier.padding(10.dp))
-        ExposedDropdownMenuBox(modifier = Modifier
-            .fillMaxWidth()
-            .padding(10.dp),
+
+        ExposedDropdownMenuBox(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(10.dp),
             expanded = expanded,
             onExpandedChange = {
                 expanded = !expanded
-            }) {
-            OutlinedTextField(modifier = Modifier
-                .menuAnchor()
-                //.align(Alignment.End)
-                .padding(10.dp),
+            }
+        ) {
+            OutlinedTextField(
+                modifier = Modifier
+                    .menuAnchor()
+                    .padding(10.dp),
                 value = selectedText.value,
                 onValueChange = {},
                 readOnly = true,
@@ -226,48 +232,62 @@ fun CreateProductScreen(dao: AppDao, snackbarHostState: SnackbarHostState,navCon
                     ExposedDropdownMenuDefaults.TrailingIcon(
                         expanded = expanded
                     )
-                })
+                }
+            )
 
-            ExposedDropdownMenu(expanded = if (supplierNames.value.isEmpty()) {
-                false
-            } else {
-                expanded
-            }, onDismissRequest = {
-                expanded = false
-            }) {
+            ExposedDropdownMenu(
+                expanded = if (supplierNames.value.isEmpty()) {
+                    false
+                } else {
+                    expanded
+                },
+                onDismissRequest = {
+                    expanded = false
+                }
+            ) {
                 supplierNames.value.forEach { item ->
-                    DropdownMenuItem(text = { Text(text = item.Name) }, onClick = {
-                        selectedSupplier.value = item
-                        selectedText.value = item.Name
-                        expanded = false
-                    })
+                    DropdownMenuItem(
+                        text = { Text(text = item.Name) },
+                        onClick = {
+                            selectedSupplier.value = item
+                            selectedText.value = item.Name
+                            expanded = false
+                        }
+                    )
                 }
             }
         }
-        FilledTonalButton(modifier = Modifier
-            .align(Alignment.End)
-            .padding(10.dp), onClick = {
-            val stockId = dao.insertStock(Stock(Stock = stock.value.toInt()))
 
-            if (!priceError || !quantityError) {
-                if (0 < dao.insertProduct(
-                        Product(
-                            SupplierId = selectedSupplier.value.SupplierId,
-                            ProductName = productName.value,
-                            ProductManufacturer = manufacturer.value,
-                            ProductPrice = price.value.toInt(),
-                            ProductDescription = description.value,
-                            StockId = stockId.toInt()
-                        )
-                    )
-                ) {
-                    scope.launch { snackbarHostState.showSnackbar("Success!") }
-                } else {
-                    scope.launch { snackbarHostState.showSnackbar("Something Happened Try Again") }
+        FilledTonalButton(
+            modifier = Modifier
+                .align(Alignment.End)
+                .padding(10.dp),
+            onClick = {
+                scope.launch {
+                    val stockId = dao.insertStock(Stock(Stock = stock.value.toInt()))
+
+                    if (!priceError || !quantityError) {
+                        if (dao.insertProduct(
+                                Product(
+                                    SupplierId = selectedSupplier.value.SupplierId,
+                                    ProductName = productName.value,
+                                    ProductManufacturer = manufacturer.value,
+                                    ProductPrice = price.value.toInt(),
+                                    ProductDescription = description.value,
+                                    StockId = stockId.toInt()
+                                )
+                            ) > 0
+                        ) {
+                            snackbarHostState.showSnackbar("Success!")
+                        } else {
+                            snackbarHostState.showSnackbar("Something Happened Try Again")
+                        }
+                    }
                 }
+                navController.popBackStack()
             }
-
-            navController.popBackStack()
-        }) { Text("Insert") }
-    }}
-
+        ) {
+            Text("Insert")
+        }
+    }
+}

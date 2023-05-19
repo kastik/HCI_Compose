@@ -95,27 +95,29 @@ fun SupplierCard(
                         .clickable(
                             // enabled = actionsEnabled.value,
                             onClick = {
+                                scope.launch {
 
-                                if (action.value == CardActions.Delete && actionsEnabled.value) {
-                                    if (0 < database.deleteSupplier(supplier)) {
-                                        scope.launch { snackbarHostState.showSnackbar("Success!") }
+                                    if (action.value == CardActions.Delete && actionsEnabled.value) {
+                                        if (0 < database.deleteSupplier(supplier)) {
+                                            scope.launch { snackbarHostState.showSnackbar("Success!") }
+                                        } else {
+                                            scope.launch { snackbarHostState.showSnackbar("Something Happened Try Again") }
+                                        }
+
                                     } else {
-                                        scope.launch { snackbarHostState.showSnackbar("Something Happened Try Again") }
-                                    }
-
-                                } else {
-                                    if (action.value == CardActions.Modify && actionsEnabled.value) {
-                                        selectedSupplierId.value = supplier.SupplierId
-                                        navController.navigate(AvailableScreens.EditSupplierScreen.name)
+                                        if (action.value == CardActions.Modify && actionsEnabled.value) {
+                                            selectedSupplierId.value = supplier.SupplierId
+                                            navController.navigate(AvailableScreens.EditSupplierScreen.name)
+                                        }
                                     }
                                 }
                             }
                         ),
                     verticalArrangement = Arrangement.Center
                 ) {
-                    if(action.value== CardActions.Delete) {
+                    if (action.value == CardActions.Delete) {
                         Icon(Icons.Filled.Delete, contentDescription = "Delete the item")
-                    }else{
+                    } else {
                         Icon(Icons.Filled.Edit, contentDescription = "Delete the item")
                     }
                 }
@@ -127,10 +129,16 @@ fun SupplierCard(
                     .weight(1f)
                     .padding(5.dp)
             ) {
-                Text(text = stringResource(R.string.SupplierName), style = (MaterialTheme.typography.labelSmall))
+                Text(
+                    text = stringResource(R.string.SupplierName),
+                    style = (MaterialTheme.typography.labelSmall)
+                )
                 Text(text = supplier.Name)
                 Spacer(modifier = Modifier.padding(5.dp))
-                Text(text = stringResource(R.string.SupplierLocation), style = (MaterialTheme.typography.labelSmall))
+                Text(
+                    text = stringResource(R.string.SupplierLocation),
+                    style = (MaterialTheme.typography.labelSmall)
+                )
                 Text(text = supplier.Location)
                 Spacer(modifier = Modifier.padding(5.dp))
             }

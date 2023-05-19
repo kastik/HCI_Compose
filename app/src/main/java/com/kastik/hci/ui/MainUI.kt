@@ -132,7 +132,7 @@ fun MainUI() {
                                 dropDownState.value = false
                                 drawerGestureEnabled.value = true
                                 showSelectionOnCard.value = false
-                                HomeScreen()
+                                HomeScreen(dao,firestore)
                             }
                             composable(AvailableScreens.SupplierScreen.name) {
                                 LaunchedEffect(drawerState) {

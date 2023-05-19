@@ -15,6 +15,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
@@ -46,14 +47,17 @@ fun EditCustomerScreen(
 
     val customers = remember { mutableStateListOf<CustomerData>() }
 
-    customerDb.get().addOnSuccessListener {
-        for (customer in it) {
-            customers.add(customer.toObject(CustomerData::class.java))
+    LaunchedEffect(Unit) {
+        customerDb.get().addOnSuccessListener { querySnapshot ->
+            for (customer in querySnapshot) {
+                customers.add(customer.toObject(CustomerData::class.java))
+            }
         }
     }
 
     val scope = rememberCoroutineScope()
     val focusManager = LocalFocusManager.current
+
     Column(
         Modifier.wrapContentSize()
     ) {
@@ -62,8 +66,9 @@ fun EditCustomerScreen(
                 .align(Alignment.CenterHorizontally)
                 .padding(10.dp),
             style = MaterialTheme.typography.headlineSmall,
-            text = "Register A New Customer"
+            text = "Edit Customer"
         )
+
         OutlinedTextField(
             shape = RoundedCornerShape(15.dp),
             modifier = Modifier
@@ -76,11 +81,11 @@ fun EditCustomerScreen(
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
             keyboardActions = KeyboardActions(onDone = {
                 focusManager.moveFocus(FocusDirection.Down)
-                //focusRequester.requestFocus()
             })
-
         )
+
         Spacer(modifier = Modifier.padding(10.dp))
+
         OutlinedTextField(
             shape = RoundedCornerShape(15.dp),
             modifier = Modifier
@@ -93,14 +98,11 @@ fun EditCustomerScreen(
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
             keyboardActions = KeyboardActions(onDone = {
                 focusManager.clearFocus()
-                //focusRequester.requestFocus()
             })
         )
-        FilledTonalButton(
 
-            modifier = Modifier
-                .align(Alignment.End)
-                .padding(10.dp), onClick = {
+        FilledTonalButton(
+            onClick = {
                 customerDb.document(selectedCustomerId.value).update(
                     mapOf(
                         "customerName" to customerName,
@@ -109,10 +111,15 @@ fun EditCustomerScreen(
                 ).addOnSuccessListener {
                     scope.launch { snackbarHostState.showSnackbar("Success!") }
                 }.addOnFailureListener {
-                    scope.launch { snackbarHostState.showSnackbar("Something Happened Try Again") }
+                    scope.launch { snackbarHostState.showSnackbar("Something Happened. Try Again.") }
                 }
                 navController.popBackStack()
-            }) { Text("Insert") }
+            },
+            modifier = Modifier
+                .align(Alignment.End)
+                .padding(10.dp)
+        ) {
+            Text("Update")
+        }
     }
 }
-

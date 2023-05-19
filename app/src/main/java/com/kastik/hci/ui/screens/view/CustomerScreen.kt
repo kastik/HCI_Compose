@@ -4,6 +4,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
@@ -24,15 +25,28 @@ fun CustomerScreen(customerDb: CollectionReference,
 ){
     val customers = remember { mutableStateListOf<CustomerData>() }
 
-    customerDb.get().addOnSuccessListener {
-        for (customer in it) {
-            customers.add(customer.toObject(CustomerData::class.java))
+    LaunchedEffect(Unit) {
+        customerDb.get().addOnSuccessListener { querySnapshot ->
+            for (customerDocument in querySnapshot.documents) {
+                val customer = customerDocument.toObject(CustomerData::class.java)
+                if (customer != null) {
+                    customers.add(customer)
+                }
+            }
         }
     }
 
-    LazyColumn(){
-        itemsIndexed(customers){index, customer ->
-            CustomerCard(customer,selectedCustomerId,showSelectionOnCard,action, navController,snackbarHostState,customerDb)
+    LazyColumn {
+        itemsIndexed(items = customers) { index, customer ->
+            CustomerCard(
+                customer = customer,
+                selectedCustomer = selectedCustomerId,
+                actionsEnabled = showSelectionOnCard,
+                action = action,
+                navController = navController,
+                snackbarHostState = snackbarHostState,
+                customerDb = customerDb
+            )
         }
     }
 }

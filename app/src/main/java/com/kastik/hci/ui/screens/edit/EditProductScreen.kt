@@ -18,6 +18,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -40,10 +41,14 @@ import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun EditProductScreen(productId: Int,dao: AppDao,snackbarHostState: SnackbarHostState,navController: NavController){
-
+fun EditProductScreen(
+    productId: Int,
+    dao: AppDao,
+    snackbarHostState: SnackbarHostState,
+    navController: NavController
+) {
+    val scope = rememberCoroutineScope()
     val product = dao.getProductWithId(productId)
-
     val productName = remember { mutableStateOf(product.ProductName) }
     val manufacturer = remember { mutableStateOf(product.ProductManufacturer) }
     val price = remember { mutableStateOf(product.ProductPrice.toString()) }
@@ -54,25 +59,20 @@ fun EditProductScreen(productId: Int,dao: AppDao,snackbarHostState: SnackbarHost
     var priceError by rememberSaveable { mutableStateOf(false) }
     var quantityError by rememberSaveable { mutableStateOf(false) }
 
-    val scope = rememberCoroutineScope()
-
-
 
     Column(
-        Modifier
+        modifier = Modifier
             .fillMaxWidth()
             .wrapContentSize()
-        //.fillMaxHeight()
-        //.verticalScroll(rememberScrollState())
-
     ) {
         Text(
             modifier = Modifier
                 .align(Alignment.CenterHorizontally)
                 .padding(10.dp),
             style = MaterialTheme.typography.headlineSmall,
-            text = "Insert Product"
+            text = "Edit Product"
         )
+
         OutlinedTextField(
             shape = RoundedCornerShape(15.dp),
             modifier = Modifier
@@ -85,10 +85,11 @@ fun EditProductScreen(productId: Int,dao: AppDao,snackbarHostState: SnackbarHost
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
             keyboardActions = KeyboardActions(onDone = {
                 focusManager.moveFocus(FocusDirection.Down)
-                //focusRequester.requestFocus()
             })
         )
+
         Spacer(modifier = Modifier.padding(10.dp))
+
         OutlinedTextField(
             shape = RoundedCornerShape(15.dp),
             modifier = Modifier
@@ -101,10 +102,11 @@ fun EditProductScreen(productId: Int,dao: AppDao,snackbarHostState: SnackbarHost
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
             keyboardActions = KeyboardActions(onDone = {
                 focusManager.moveFocus(FocusDirection.Down)
-                //focusRequester.requestFocus()
             })
         )
+
         Spacer(modifier = Modifier.padding(10.dp))
+
         OutlinedTextField(
             shape = RoundedCornerShape(15.dp),
             modifier = Modifier
@@ -132,29 +134,17 @@ fun EditProductScreen(productId: Int,dao: AppDao,snackbarHostState: SnackbarHost
             ),
             keyboardActions = KeyboardActions(onDone = {
                 focusManager.moveFocus(FocusDirection.Down)
-                //focusRequester.requestFocus()
             }),
             trailingIcon = {
-                if (quantityError)
-                    Icon(Icons.Filled.Error,"error", tint = MaterialTheme.colorScheme.error)
+                if (priceError)
+                    Icon(
+                        imageVector = Icons.Default.Error,
+                        contentDescription = "error",
+                        tint = MaterialTheme.colorScheme.error
+                    )
             }
         )
-        Spacer(modifier = Modifier.padding(10.dp))
-        OutlinedTextField(
-            shape = RoundedCornerShape(15.dp),
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(10.dp),
-            value = description.value,
-            onValueChange = { description.value = it },
-            label = { Text("Product Description") },
-            singleLine = true,
-            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
-            keyboardActions = KeyboardActions(onDone = {
-                focusManager.moveFocus(FocusDirection.Down)
-                //focusRequester.requestFocus()
-            })
-        )
+
         Spacer(modifier = Modifier.padding(10.dp))
 
         OutlinedTextField(
@@ -184,22 +174,24 @@ fun EditProductScreen(productId: Int,dao: AppDao,snackbarHostState: SnackbarHost
             ),
             keyboardActions = KeyboardActions(onDone = {
                 focusManager.clearFocus()
-                //focusRequester.requestFocus()
             }),
             trailingIcon = {
                 if (quantityError)
-                    Icon(Icons.Filled.Error,"error", tint = MaterialTheme.colorScheme.error)
+                    Icon(
+                        imageVector = Icons.Default.Error,
+                        contentDescription = "error",
+                        tint = MaterialTheme.colorScheme.error
+                    )
             }
         )
-        FilledTonalButton(modifier = Modifier
-            .align(Alignment.End)
-            .padding(10.dp), onClick = {
 
+        Spacer(modifier = Modifier.padding(10.dp))
 
-            if (!priceError || !quantityError) {
+        FilledTonalButton(
+            onClick = {
+                if (!priceError && !quantityError) {
                     dao.updateStock(Stock(Stock = stock.value.toInt(), StockId = product.StockId))
-                    if (0 <
-                        dao.updateProduct(
+                    if (dao.updateProduct(
                             Product(
                                 ProductId = product.ProductId,
                                 SupplierId = product.SupplierId,
@@ -209,24 +201,26 @@ fun EditProductScreen(productId: Int,dao: AppDao,snackbarHostState: SnackbarHost
                                 ProductDescription = description.value,
                                 StockId = product.StockId
                             )
-                        )
+                        ) > 0
                     ) {
-                        scope.launch {  snackbarHostState.showSnackbar("Success!")}
+                        scope.launch { snackbarHostState.showSnackbar("Success!") }
                         navController.popBackStack()
                     } else {
-                        scope.launch {  snackbarHostState.showSnackbar("Something Happened Try Again")}
+                        scope.launch { snackbarHostState.showSnackbar("Something Happened. Try Again.") }
                     }
+                }
 
-            }
-
-            productName.value = ""
-            manufacturer.value = ""
-            price.value = ""
-            description.value = ""
-            stock.value = ""
-        }) { Text("Insert") }
+                productName.value = ""
+                manufacturer.value = ""
+                price.value = ""
+                description.value = ""
+                stock.value = ""
+            },
+            modifier = Modifier
+                .align(Alignment.End)
+                .padding(10.dp)
+        ) {
+            Text("Update")
+        }
     }
-
-
-
 }

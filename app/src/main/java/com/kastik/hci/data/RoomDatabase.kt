@@ -13,40 +13,27 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.Update
 import kotlinx.coroutines.flow.Flow
-
-@Database(entities = [Product::class,Stock::class,Supplier::class], version = 1)
+@Database(entities = [Product::class, Stock::class, Supplier::class], version = 1)
 abstract class AppDatabase : RoomDatabase() {
     abstract fun AppDao(): AppDao
 
-    companion object{
-        private var INSTANCE:AppDatabase? = null
+    companion object {
+        @Volatile
+        private var INSTANCE: AppDatabase? = null
 
-        fun getDatabase(context: Context):AppDatabase{
-            synchronized(this){
-                var instance = INSTANCE
-                if (instance == null) {
-                    instance = Room.databaseBuilder(
-                        context.applicationContext,
-                        AppDatabase::class.java,
-                        "Database.db"
-                    )
-                        .allowMainThreadQueries() //TODO Remove at some point
-                        .build()
-
-                    INSTANCE = instance
-                }
-                return instance
+        fun getDatabase(context: Context): AppDatabase {
+            return INSTANCE ?: synchronized(this) {
+                val instance = Room.databaseBuilder(
+                    context.applicationContext,
+                    AppDatabase::class.java,
+                    "Database.db"
+                ).build()
+                INSTANCE = instance
+                instance
             }
         }
-
     }
 }
-
-//TableName = ClassName of entities if not specified
-//ColumnInfo = var name if not specified
-//TODO onDelete = ForeignKey.CASCADE
-
-
 
 @Entity
 data class Supplier(
@@ -56,9 +43,22 @@ data class Supplier(
     val Location: String
 )
 
-@Entity(foreignKeys =
-[ForeignKey(entity = Supplier::class, childColumns = ["SupplierId"], parentColumns = ["SupplierId"],onDelete = ForeignKey.CASCADE),
-    ForeignKey(entity = Stock::class, childColumns = ["StockId"], parentColumns = ["StockId"],onDelete = ForeignKey.CASCADE)])
+@Entity(
+    foreignKeys = [
+        ForeignKey(
+            entity = Supplier::class,
+            childColumns = ["SupplierId"],
+            parentColumns = ["SupplierId"],
+            onDelete = ForeignKey.CASCADE
+        ),
+        ForeignKey(
+            entity = Stock::class,
+            childColumns = ["StockId"],
+            parentColumns = ["StockId"],
+            onDelete = ForeignKey.CASCADE
+        )
+    ]
+)
 data class Product(
     @PrimaryKey(autoGenerate = true)
     val ProductId: Int = 0,
@@ -68,7 +68,6 @@ data class Product(
     val ProductManufacturer: String,
     val ProductPrice: Int,
     val ProductDescription: String
-
 )
 
 @Entity
@@ -78,71 +77,63 @@ data class Stock(
     val Stock: Int
 )
 
-/* TODO Add susped to Dao Funs */
-//TODO Add @Update fun
-
 @Dao
 interface AppDao {
     @Insert
-    fun insertSupplier(supplier: Supplier) : Long
+    suspend fun insertSupplier(supplier: Supplier): Long
+
     @Insert
-    fun insertStock(stock: Stock) : Long
+    suspend fun insertStock(stock: Stock): Long
+
     @Insert
-    fun insertProduct(product: Product) : Long
+    suspend fun insertProduct(product: Product): Long
 
     @Query("SELECT * FROM PRODUCT")
     fun getAllProducts(): Flow<List<Product>>
 
     @Query("SELECT * FROM Supplier")
     fun getAllSuppliers(): Flow<List<Supplier>>
+
     @Query("SELECT * FROM Stock")
     fun getAllStocks(): Flow<List<Stock>>
 
-   @Query("SELECT Supplier.Name FROM Supplier")
-   fun getSupplierNames(): Flow<List<String>>
+    @Query("SELECT * FROM Stock WHERE StockId=:stockId")
+    //suspend
+    fun getStockOfProduct(stockId: Int?): Stock
 
-   @Query("SELECT * FROM Supplier WHERE :supplierId==Supplier.SupplierId")
-   fun getSupplierInfo(supplierId: Int): Supplier
+    @Query("SELECT * FROM Product WHERE ProductId=:productId")
+    //suspend
+    fun getProductWithId(productId: Int?): Product
 
-   @Query("SELECT * FROM Stock WHERE :stockId==Stock.Stockid")
-   fun getStockOfProduct(stockId: Int?): Stock
-
-
-   @Query("SELECT * FROM Product WHERE :productId==Product.ProductId")
-   fun getProductWithId(productId: Int?) :Product
-
-
-   @Query("SELECT * FROM SUPPLIER WHERE :supplierId==Supplier.SupplierId")
+    @Query("SELECT * FROM Supplier WHERE SupplierId=:supplierId")
+    //suspend
     fun getSupplierWithId(supplierId: Int): Supplier
 
-    //@Query("SELECT * FROM Supplier LEFT JOIN Product ON Supplier.SupplierId==Product.SupplierId AND Product.ProductId==:productId")
-    //fun getSupplierOfProduct(productId: Int): Flow<Supplier>
+    @Query("SELECT SUM(STOCK) FROM STOCK")
+    suspend fun getStockCount(): Int
 
-    //@Query("SELECT * FROM Stock LEFT JOIN PRODUCT ON Stock.StockId==Product.StockId AND Product.ProductId==:productId")
-    //fun getStockOfProduct(productId: Int): Flow<Stock>
-
-    /*@Query("SELECT * FROM SUPPLIER WHERE ProductId==:ProductId")
-    fun getSupplierOfProduct(ProductId: Int): Flow<List<Supplier>>
-
-     */
+    @Query("SELECT COUNT(SupplierId) FROM Supplier")
+    suspend
+    fun getSupplierCount(): Int
 
     @Delete
-    fun deleteProduct(product: Product) :Int
+    suspend fun deleteProduct(product: Product): Int
 
     @Delete
-    fun deleteSupplier(supplier: Supplier) :Int
+    suspend fun deleteSupplier(supplier: Supplier): Int
 
     @Delete
-    fun deleteStock(stock: Stock) :Int
-    @Update
-    fun updateProduct(product: Product) :Int
+    suspend fun deleteStock(stock: Stock): Int
 
     @Update
-    fun updateStock(stock: Stock) :Int
+    //suspend
+    fun updateProduct(product: Product): Int
 
     @Update
-    fun updateSupplier(supplier: Supplier) : Int
+    //suspend
+    fun updateStock(stock: Stock): Int
 
-    //TODO Add @Update fun
-    //TODO ADD suspend fun on UPDATE DELETE AND MODIFY
+    @Update
+    //suspend
+    fun updateSupplier(supplier: Supplier): Int
 }

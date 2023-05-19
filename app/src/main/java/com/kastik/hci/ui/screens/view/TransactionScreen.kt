@@ -4,6 +4,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
@@ -27,27 +28,30 @@ fun TransactionScreen(
 
 
 
-
-    val transactions = Firebase.firestore.collection("Transactions")
+    val transactionsCollection = Firebase.firestore.collection("Transactions")
 
     val myData = remember { mutableStateListOf<Transaction>() }
 
-    transactions.get().addOnSuccessListener { documents ->
-        for (document in documents) {
-            myData.add(document.toObject(Transaction::class.java))
+    LaunchedEffect(Unit) {
+        transactionsCollection.get().addOnSuccessListener { documents ->
+            for (document in documents) {
+                val transaction = document.toObject(Transaction::class.java)
+                myData.add(transaction)
+            }
         }
     }
 
     LazyColumn {
-        itemsIndexed(myData) { index,transactions ->
+        itemsIndexed(items = myData) { index, transaction ->
             TransactionCard(
                 transactionId = selectedTransactionId,
                 actionsEnabled = showSelectionOnCard,
-                action=action,
-                navController=navController,
-                transaction = transactions,
-                customerDb= customerDb,
-                snackbarHostState = snackbarHostState)
+                action = action,
+                navController = navController,
+                transaction = transaction,
+                customerDb = customerDb,
+                snackbarHostState = snackbarHostState
+            )
         }
     }
 

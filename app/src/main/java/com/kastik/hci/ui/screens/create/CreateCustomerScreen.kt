@@ -1,11 +1,11 @@
 package com.kastik.hci.ui.screens.create
 
-import android.util.Log
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -19,6 +19,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -29,24 +30,32 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.google.firebase.firestore.CollectionReference
 import com.kastik.hci.data.CustomerData
+import kotlinx.coroutines.launch
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CreateCustomerScreen(customerDb: CollectionReference, snackbarHostState: SnackbarHostState,navController: NavController) {
+fun CreateCustomerScreen(
+    customerDb: CollectionReference,
+    snackbarHostState: SnackbarHostState,
+    navController: NavController
+) {
     var customerName by remember { mutableStateOf("") }
     var customerLastname by remember { mutableStateOf("") }
     val focusManager = LocalFocusManager.current
+    val scope = rememberCoroutineScope()
+
     Column(
-        Modifier.wrapContentSize()
+        modifier = Modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
-            modifier = Modifier
-                .align(Alignment.CenterHorizontally)
-                .padding(10.dp),
+            modifier = Modifier.padding(10.dp),
             style = MaterialTheme.typography.headlineSmall,
             text = "Register A New Customer"
         )
+
         OutlinedTextField(
             shape = RoundedCornerShape(15.dp),
             modifier = Modifier
@@ -57,13 +66,11 @@ fun CreateCustomerScreen(customerDb: CollectionReference, snackbarHostState: Sna
             label = { Text("Customer Name") },
             singleLine = true,
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
-            keyboardActions = KeyboardActions(onDone = {
-                focusManager.moveFocus(FocusDirection.Down)
-                //focusRequester.requestFocus()
-            })
-
+            keyboardActions = KeyboardActions(onNext = { focusManager.moveFocus(FocusDirection.Down) })
         )
+
         Spacer(modifier = Modifier.padding(10.dp))
+
         OutlinedTextField(
             shape = RoundedCornerShape(15.dp),
             modifier = Modifier
@@ -74,25 +81,37 @@ fun CreateCustomerScreen(customerDb: CollectionReference, snackbarHostState: Sna
             label = { Text("Customer Lastname") },
             singleLine = true,
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-            keyboardActions = KeyboardActions(onDone = {
-                focusManager.clearFocus()
-                //focusRequester.requestFocus()
-            })
+            keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() })
         )
-        FilledTonalButton(
 
-            modifier = Modifier
-                .align(Alignment.End)
-                .padding(10.dp), onClick = {
-                customerDb.add(
-                    CustomerData(
-                        customerName = customerName, customerLastName = customerLastname
+        Spacer(modifier = Modifier.padding(10.dp))
+
+        FilledTonalButton(
+            modifier = Modifier.padding(10.dp),
+            onClick = {
+                if (customerName.isNotEmpty() && customerLastname.isNotEmpty()) {
+                    val newCustomer = CustomerData(
+                        customerName = customerName,
+                        customerLastName = customerLastname
                     )
-                ).addOnSuccessListener {
-                    Log.d("MyLog", "DataComplete")
+
+                    customerDb.add(newCustomer)
+                        .addOnSuccessListener {
+                            scope.launch {
+                                snackbarHostState.showSnackbar("Success!")
+                            }
+                        }
+
+                    navController.popBackStack()
+                } else {
+                    scope.launch {
+                        snackbarHostState.showSnackbar("Please enter both name and lastname.")
+                    }
                 }
-                navController.popBackStack()
-            }) { Text("Insert") }
+            }
+        ) {
+            Text(text = "Insert")
+        }
     }
 }
 

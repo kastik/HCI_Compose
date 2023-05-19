@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentSize
@@ -19,13 +20,13 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
-import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -43,7 +44,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Popup
 import androidx.navigation.NavController
 import com.google.firebase.firestore.CollectionReference
 import com.kastik.hci.R
@@ -63,69 +63,47 @@ fun EditTransactionScreen(
     selectedTransactionId: MutableState<String>,
     dao: AppDao
 ) {
-
-
     val quantity = remember { mutableStateOf("") }
-
     val focusManager = LocalFocusManager.current
-
 
     var customerExpanded by remember { mutableStateOf(false) }
     var productExpanded by remember { mutableStateOf(false) }
 
     val productData = remember { mutableStateOf(dao.getAllProducts()) }
-
-
     val customerData = remember { mutableStateListOf<CustomerData>() }
 
-    customerDb.get().addOnSuccessListener {
-        for (customer in it) {
-            customerData.add(customer.toObject(CustomerData::class.java))
+    LaunchedEffect(Unit) {
+        customerDb.get().addOnSuccessListener { querySnapshot ->
+            for (customer in querySnapshot) {
+                customerData.add(customer.toObject(CustomerData::class.java))
+            }
         }
     }
 
-
     val selectedCustomerText = remember { mutableStateOf("") }
-    selectedCustomerText.value = if(customerData.isEmpty()){
+    selectedCustomerText.value = if (customerData.isEmpty()) {
         stringResource(R.string.InsertACustomer)
-    }
-    else{
+    } else {
         stringResource(R.string.SelectACustomer)
     }
 
-
-
     val selectedProductIdText = remember { mutableStateOf("") }
-
-    selectedProductIdText.value = if(productData.value.collectAsState(initial = emptyList()).value.isEmpty()){
+    selectedProductIdText.value = if (productData.value.collectAsState(initial = emptyList()).value.isEmpty()) {
         stringResource(R.string.InsertAProduct)
-    }
-    else{
+    } else {
         stringResource(R.string.SelectAProduct)
     }
 
-
     val selectedCustomer = remember { mutableStateOf(CustomerData()) }
-
-    val selectedProduct = remember { mutableStateOf(Product(0,0,0,"","",0,"")) }
-
-
+    val selectedProduct = remember { mutableStateOf(Product(0, 0, 0, "", "", 0, "")) }
     var quantityError by rememberSaveable { mutableStateOf(false) }
-
     var showPopUp by remember { mutableStateOf(false) }
-
     val scope = rememberCoroutineScope()
-
-
-
 
     Column(
         Modifier
             .fillMaxWidth()
             .wrapContentSize()
-        //.fillMaxHeight()
-        //.verticalScroll(rememberScrollState())
-
     ) {
         Text(
             modifier = Modifier
@@ -134,7 +112,9 @@ fun EditTransactionScreen(
             style = MaterialTheme.typography.headlineSmall,
             text = "Edit the Transaction"
         )
+
         Spacer(modifier = Modifier.padding(10.dp))
+
         OutlinedTextField(
             shape = RoundedCornerShape(15.dp),
             modifier = Modifier
@@ -163,27 +143,29 @@ fun EditTransactionScreen(
             ),
             keyboardActions = KeyboardActions(onDone = {
                 focusManager.moveFocus(FocusDirection.Down)
-                //focusRequester.requestFocus()
             }),
             trailingIcon = {
                 if (quantityError)
                     Icon(Icons.Filled.Error, "error", tint = MaterialTheme.colorScheme.error)
             }
-
         )
+
         Spacer(modifier = Modifier.padding(10.dp))
-        ExposedDropdownMenuBox(modifier = Modifier
-            .fillMaxWidth()
-            .padding(10.dp),
+
+        ExposedDropdownMenuBox(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(10.dp),
             expanded = customerExpanded,
             onExpandedChange = {
                 customerExpanded = !customerExpanded
                 productExpanded = false
-            }) {
-            OutlinedTextField(modifier = Modifier
-                .menuAnchor()
-                //.align(Alignment.End)
-                .padding(10.dp),
+            }
+        ) {
+            OutlinedTextField(
+                modifier = Modifier
+                    .menuAnchor()
+                    .padding(10.dp),
                 value = selectedCustomerText.value,
                 onValueChange = {},
                 readOnly = true,
@@ -191,61 +173,77 @@ fun EditTransactionScreen(
                     ExposedDropdownMenuDefaults.TrailingIcon(
                         expanded = customerExpanded
                     )
-                })
+                }
+            )
 
-            ExposedDropdownMenu(expanded = if (customerData.isEmpty()) {
-                false
-            } else {
-                customerExpanded
-            }, onDismissRequest = {
-                customerExpanded = false
-            }) {
+            ExposedDropdownMenu(
+                expanded = if (customerData.isEmpty()) {
+                    false
+                } else {
+                    customerExpanded
+                },
+                onDismissRequest = {
+                    customerExpanded = false
+                }
+            ) {
                 customerData.forEach { item ->
-                    DropdownMenuItem(text = { Text(text = item.customerName) }, onClick = {
-                        selectedCustomer.value = item
-                        selectedCustomerText.value = item.customerName
-                        customerExpanded = false
-                    })
+                    DropdownMenuItem(
+                        text = { Text(text = item.customerName) },
+                        onClick = {
+                            selectedCustomer.value = item
+                            selectedCustomerText.value = item.customerName
+                            customerExpanded = false
+                        }
+                    )
                 }
             }
         }
 
         AnimatedVisibility(visible = showPopUp) {
-
-            Popup(alignment = Alignment.Center) {
-                // Draw a rectangle shape with rounded corners inside the popup
-                Box(
-                    Modifier
-                        .size(200.dp, 70.dp)
-                        .background(
-                            MaterialTheme.colorScheme.errorContainer,
-                            RoundedCornerShape(16.dp)
-                        )
-                ) {
-                    Text(text = stringResource(R.string.stockError))
-                    Button(modifier = Modifier.align(Alignment.BottomEnd),
+            Box(
+                modifier = Modifier
+                    .size(200.dp, 70.dp)
+                    .background(
+                        MaterialTheme.colorScheme.errorContainer,
+                        RoundedCornerShape(16.dp)
+                    )
+                    .padding(16.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(
+                        text = stringResource(R.string.stockError),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onError
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Button(
                         onClick = {
                             showPopUp = false
-                        }) {
-                        Text(text = "ok")
+                        }
+                    ) {
+                        Text(text = "OK")
                     }
                 }
             }
         }
 
         Spacer(modifier = Modifier.padding(10.dp))
-        ExposedDropdownMenuBox(modifier = Modifier
-            .fillMaxWidth()
-            .padding(10.dp),
+
+        ExposedDropdownMenuBox(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(10.dp),
             expanded = productExpanded,
             onExpandedChange = {
                 productExpanded = !productExpanded
                 customerExpanded = false
-            }) {
-            OutlinedTextField(modifier = Modifier
-                .menuAnchor()
-                //.align(Alignment.End)
-                .padding(10.dp),
+            }
+        ) {
+            OutlinedTextField(
+                modifier = Modifier
+                    .menuAnchor()
+                    .padding(10.dp),
                 value = selectedProductIdText.value,
                 onValueChange = {},
                 readOnly = true,
@@ -253,53 +251,57 @@ fun EditTransactionScreen(
                     ExposedDropdownMenuDefaults.TrailingIcon(
                         expanded = productExpanded
                     )
-                })
+                }
+            )
 
-            ExposedDropdownMenu(expanded = if (productData.value.collectAsState(initial = emptyList()).value.isEmpty()) {
-                false
-            } else {
-                productExpanded
-            }, onDismissRequest = {
-                productExpanded = false
-            }) {
+            ExposedDropdownMenu(
+                expanded = if (productData.value.collectAsState(initial = emptyList()).value.isEmpty()) {
+                    false
+                } else {
+                    productExpanded
+                },
+                onDismissRequest = {
+                    productExpanded = false
+                }
+            ) {
                 productData.value.collectAsState(initial = emptyList()).value.forEach { item ->
-                    DropdownMenuItem(text = { Text(text = item.ProductName) }, onClick = {
-                        selectedProduct.value = item
-                        selectedProductIdText.value = item.ProductName
-                        productExpanded = false
-                    })
+                    DropdownMenuItem(
+                        text = { Text(text = item.ProductName) },
+                        onClick = {
+                            selectedProduct.value = item
+                            selectedProductIdText.value = item.ProductName
+                            productExpanded = false
+                        }
+                    )
                 }
             }
         }
 
         Spacer(modifier = Modifier.padding(10.dp))
 
-        FilledTonalButton(modifier = Modifier
-            .align(Alignment.End)
-            .padding(10.dp), onClick = {
-
-
-            if (!quantityError) {
-                transactionDb.document(selectedTransactionId.value).update(
+        Button(
+            modifier = Modifier
+                .align(Alignment.End)
+                .padding(10.dp),
+            onClick = {
+                if (!quantityError) {
+                    transactionDb.document(selectedTransactionId.value).update(
                         mapOf(
-                            "customerId" to (selectedCustomer.value.customerId),
+                            "customerId" to selectedCustomer.value.customerId,
                             "productName" to selectedProduct.value.ProductName,
                             "quantitySold" to quantity.value.toInt(),
                             "productId" to selectedProduct.value.ProductId
                         )
-
-                ).addOnSuccessListener {
-                    scope.launch { snackbarHostState.showSnackbar("Success") }
-                }.addOnFailureListener {
-                    scope.launch { snackbarHostState.showSnackbar("Something Happened Please Try Again") }
-                }
-
+                    ).addOnSuccessListener {
+                        scope.launch { snackbarHostState.showSnackbar("Success") }
+                    }.addOnFailureListener {
+                        scope.launch { snackbarHostState.showSnackbar("Something Happened. Please Try Again") }
+                    }
                     navController.popBackStack()
-
+                }
             }
-        }) { Text(stringResource(R.string.insert)) }
-
+        ) {
+            Text(stringResource(R.string.insert))
+        }
     }
-
-
 }
