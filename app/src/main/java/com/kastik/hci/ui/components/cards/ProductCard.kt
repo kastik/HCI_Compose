@@ -1,6 +1,5 @@
 package com.kastik.hci.ui.components.cards
 
-import android.annotation.SuppressLint
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
@@ -21,48 +20,20 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
 import com.kastik.hci.data.AppDao
-import com.kastik.hci.data.AppDatabase
 import com.kastik.hci.data.Product
 import com.kastik.hci.data.Stock
 import com.kastik.hci.ui.screens.AvailableScreens
-import com.kastik.hci.ui.theme.HCI_ComposeTheme
 import com.kastik.hci.utils.modifierBasedOnAction
 import kotlinx.coroutines.launch
 
-
-@SuppressLint("UnrememberedMutableState")
-@Preview
-@Composable
-fun ProductCardPreview(){
-    HCI_ComposeTheme {
-        Surface {
-            ProductCard(
-                mutableStateOf(0),
-                Product(1,1,1,"Pixel 2 XL","Google",100,"The latest phone from google"),
-                Stock(1,20),
-                mutableStateOf(true),
-                mutableStateOf(CardActions.Empty),
-                AppDatabase.getDatabase(LocalContext.current).AppDao(),
-                rememberNavController(),
-                SnackbarHostState()
-            )
-        }
-    }
-
-}
 
 @Composable
 fun ProductCard(

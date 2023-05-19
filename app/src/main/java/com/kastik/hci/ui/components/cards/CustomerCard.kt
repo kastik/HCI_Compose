@@ -1,6 +1,5 @@
 package com.kastik.hci.ui.components.cards
 
-import android.annotation.SuppressLint
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
@@ -24,38 +23,15 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
 import com.google.firebase.firestore.CollectionReference
-import com.google.firebase.firestore.ktx.firestore
-import com.google.firebase.ktx.Firebase
 import com.kastik.hci.data.CustomerData
 import com.kastik.hci.ui.screens.AvailableScreens
 import com.kastik.hci.utils.modifierBasedOnAction
 import kotlinx.coroutines.launch
-
-
-@SuppressLint("UnrememberedMutableState")
-@Preview
-@Composable
-fun CustomerCardPreview(){
-    CustomerCard(
-        CustomerData(),
-        mutableStateOf(""),
-        mutableStateOf(false),
-        mutableStateOf(CardActions.Empty),
-        rememberNavController(),
-        SnackbarHostState(),
-        Firebase.firestore.collection("Customer")
-    )
-
-}
-
 
 
 @Composable

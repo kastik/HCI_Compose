@@ -1,7 +1,7 @@
 package com.kastik.hci.ui.screens.view
 
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -42,7 +42,7 @@ fun TransactionScreen(
     }
 
     LazyColumn {
-        itemsIndexed(items = myData) { index, transaction ->
+        items(myData) { transaction ->
             TransactionCard(
                 selectedTransactionId = selectedTransactionId,
                 actionsEnabled = showSelectionOnCard,

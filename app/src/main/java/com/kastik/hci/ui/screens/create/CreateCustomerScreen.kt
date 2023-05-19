@@ -32,7 +32,6 @@ import com.google.firebase.firestore.CollectionReference
 import com.kastik.hci.data.CustomerData
 import kotlinx.coroutines.launch
 
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CreateCustomerScreen(

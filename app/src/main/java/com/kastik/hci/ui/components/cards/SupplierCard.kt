@@ -1,6 +1,5 @@
 package com.kastik.hci.ui.components.cards
 
-import android.annotation.SuppressLint
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
@@ -21,47 +20,18 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
 import com.kastik.hci.data.AppDao
-import com.kastik.hci.data.AppDatabase
 import com.kastik.hci.data.Supplier
 import com.kastik.hci.ui.screens.AvailableScreens
-import com.kastik.hci.ui.theme.HCI_ComposeTheme
 import com.kastik.hci.utils.modifierBasedOnAction
 import kotlinx.coroutines.launch
-
-
-@SuppressLint("UnrememberedMutableState")
-@Preview
-@Composable
-fun SupplierCardPreview(){
-    HCI_ComposeTheme {
-        Surface {
-            SupplierCard(
-                supplier = Supplier(0,"",""),
-                actionsEnabled = mutableStateOf(false),
-                action = mutableStateOf(CardActions.Empty),
-                database = AppDatabase.getDatabase(LocalContext.current).AppDao(),
-                snackbarHostState = SnackbarHostState(),
-                navController = rememberNavController(),
-                selectedSupplierId = mutableStateOf(0)
-            )
-        }
-        
-    }
-
-}
 
 
 @Composable

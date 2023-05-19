@@ -1,7 +1,7 @@
 package com.kastik.hci.ui.screens.view
 
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -37,7 +37,7 @@ fun CustomerScreen(customerDb: CollectionReference,
     }
 
     LazyColumn {
-        itemsIndexed(items = customers) { index, customer ->
+        items(customers) { customer ->
             CustomerCard(
                 customer = customer,
                 selectedCustomer = selectedCustomerId,
