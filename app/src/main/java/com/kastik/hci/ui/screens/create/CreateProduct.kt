@@ -60,7 +60,7 @@ fun CreateProductScreen(
 
     var expanded by remember { mutableStateOf(false) }
     val supplierNames = dao.getAllSuppliers().collectAsState(initial = emptyList())
-    var selectedText = remember { mutableStateOf("") }
+    val selectedText = remember { mutableStateOf("") }
 
     selectedText.value = if (supplierNames.value.isEmpty()) {
         "Insert A Supplier First"

@@ -22,6 +22,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -60,13 +61,20 @@ fun TransactionCard(
     var customerData by remember { mutableStateOf(CustomerData()) }
 
 
-    customerDb.whereEqualTo(transaction.transactionId,transactionId.value)
-        .get()
-        .addOnSuccessListener { documents ->
-            for (document in documents) {
-                customerData = (document.toObject(CustomerData::class.java))
+    LaunchedEffect(Unit) {
+        customerDb.document(transaction.customerId)
+            .get()
+            .addOnSuccessListener { document ->
+                    customerData = document.toObject(CustomerData::class.java)!!
             }
-        }
+            .addOnFailureListener { exception ->
+                // Handle the failure case if needed
+                scope.launch {
+                    snackbarHostState.showSnackbar("Failed to fetch customer data: ${exception.message}")
+                }
+            }
+    }
+
 
 
     val transactionDb = Firebase.firestore.collection("Transactions")
@@ -145,19 +153,4 @@ fun TransactionCard(
 
     }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 

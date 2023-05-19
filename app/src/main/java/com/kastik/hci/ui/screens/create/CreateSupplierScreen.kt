@@ -102,13 +102,17 @@ fun CreateSupplierScreen(
                 modifier = Modifier.align(Alignment.End),
                 onClick = {
                     scope.launch {
-                        dao.insertSupplier(
+                        if(0< dao.insertSupplier(
                             Supplier(
                                 Name = supplierName,
                                 Location = supplierLocation
                             )
-                        )
+                        )){snackbarHostState.showSnackbar("Success!")}
+                        else{
+                            snackbarHostState.showSnackbar("Something went wrong")
+                        }
                     }
+
                     navController.popBackStack()
                 }
             ) {
