@@ -1,6 +1,5 @@
 package com.kastik.hci.ui.screens.view
 
-import android.util.Log
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.SnackbarHostState
@@ -9,6 +8,7 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
 import androidx.navigation.NavController
+import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import com.kastik.hci.data.Transaction
@@ -21,7 +21,8 @@ fun TransactionScreen(
     action: MutableState<CardActions>,
     selectedTransactionId: MutableState<String>,
     navController: NavController,
-    snackbarHostState: SnackbarHostState
+    snackbarHostState: SnackbarHostState,
+    customerDb: CollectionReference
 ) {
 
 
@@ -29,7 +30,6 @@ fun TransactionScreen(
 
     val transactions = Firebase.firestore.collection("Transactions")
 
-    var test = 0
     val myData = remember { mutableStateListOf<Transaction>() }
 
     transactions.get().addOnSuccessListener { documents ->
@@ -40,13 +40,13 @@ fun TransactionScreen(
 
     LazyColumn {
         itemsIndexed(myData) { index,transactions ->
-            Log.d("MyLog",index.toString())
             TransactionCard(
                 transactionId = selectedTransactionId,
                 actionsEnabled = showSelectionOnCard,
                 action=action,
                 navController=navController,
                 transaction = transactions,
+                customerDb= customerDb,
                 snackbarHostState = snackbarHostState)
         }
     }

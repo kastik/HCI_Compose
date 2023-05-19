@@ -18,7 +18,7 @@ import com.kastik.hci.ui.components.cards.CustomerCard
 fun CustomerScreen(customerDb: CollectionReference,
                    showSelectionOnCard: MutableState<Boolean>,
                    action: MutableState<CardActions>,
-                   selectedTransactionId: MutableState<String>,
+                   selectedCustomerId: MutableState<String>,
                    navController: NavController,
                    snackbarHostState: SnackbarHostState
 ){
@@ -32,7 +32,7 @@ fun CustomerScreen(customerDb: CollectionReference,
 
     LazyColumn(){
         itemsIndexed(customers){index, customer ->
-            CustomerCard(customer,showSelectionOnCard,action, navController, snackbarHostState)
+            CustomerCard(customer,selectedCustomerId,showSelectionOnCard,action, navController,snackbarHostState,customerDb)
         }
     }
 }

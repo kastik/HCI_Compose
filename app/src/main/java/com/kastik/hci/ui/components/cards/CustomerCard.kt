@@ -31,8 +31,13 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.google.firebase.firestore.CollectionReference
+import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.ktx.Firebase
 import com.kastik.hci.data.CustomerData
+import com.kastik.hci.ui.screens.AvailableScreens
 import com.kastik.hci.utils.modifierBasedOnAction
+import kotlinx.coroutines.launch
 
 
 @SuppressLint("UnrememberedMutableState")
@@ -41,10 +46,12 @@ import com.kastik.hci.utils.modifierBasedOnAction
 fun CustomerCardPreview(){
     CustomerCard(
         CustomerData(),
+        mutableStateOf(""),
         mutableStateOf(false),
         mutableStateOf(CardActions.Empty),
         rememberNavController(),
-        SnackbarHostState()
+        SnackbarHostState(),
+        Firebase.firestore.collection("Customer")
     )
 
 }
@@ -54,10 +61,13 @@ fun CustomerCardPreview(){
 @Composable
 fun CustomerCard(
     customer: CustomerData,
+    selectedCustomer: MutableState<String>,
     actionsEnabled: MutableState<Boolean>,
     action: MutableState<CardActions>,
     navController: NavController,
-    snackbarHostState: SnackbarHostState
+    snackbarHostState: SnackbarHostState,
+    customerDb: CollectionReference,
+
 ){
     val scope = rememberCoroutineScope()
     Card(
@@ -81,13 +91,14 @@ fun CustomerCard(
                             onClick = {
 
                                 if (action.value == CardActions.Delete && actionsEnabled.value) {
-                                    //      if(0<database.deleteProduct(product)){ scope.launch { snackbarHostState.showSnackbar("Success!") } }
-                                    //     else{scope.launch { snackbarHostState.showSnackbar("Something Happened Try Again")}}
-
-                                    //    } else{
+                                    customerDb.document(customer.customerId).delete().addOnSuccessListener {
+                                        scope.launch { snackbarHostState.showSnackbar("Success!") }
+                                    }.addOnFailureListener{
+                                        scope.launch { snackbarHostState.showSnackbar("Something went wrong") }
+                                    }
                                     if (action.value == CardActions.Modify && actionsEnabled.value) {
-                                        //   selectedProductId.value = product.ProductId
-                                        //  navController.navigate(AvailableScreens.EditProductScreen.name)
+                                        selectedCustomer.value = customer.customerId
+                                        navController.navigate(AvailableScreens.EditCustomerScreen.name)
                                     }
                                 }
                             }

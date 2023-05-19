@@ -1,4 +1,4 @@
-package com.kastik.hci.ui.screens.create
+package com.kastik.hci.ui.screens.edit
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
@@ -26,6 +26,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -46,18 +47,17 @@ import com.google.firebase.firestore.CollectionReference
 import com.kastik.hci.data.AppDao
 import com.kastik.hci.data.CustomerData
 import com.kastik.hci.data.Product
-import com.kastik.hci.data.Stock
-import com.kastik.hci.data.Transaction
 import com.kastik.hci.utils.checkNumberInput
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CreateTransactionScreen(
+fun EditTransactionScreen(
     transactionDb: CollectionReference,
     customerDb: CollectionReference,
     snackbarHostState: SnackbarHostState,
     navController: NavController,
+    selectedTransactionId: MutableState<String>,
     dao: AppDao
 ) {
 
@@ -71,7 +71,7 @@ fun CreateTransactionScreen(
     var productExpanded by remember { mutableStateOf(false) }
 
     val customerData = remember { mutableListOf<CustomerData>() }
-    val productData = remember {mutableStateOf(dao.getAllProducts())}
+    val productData = remember { mutableStateOf(dao.getAllProducts()) }
 
 
     customerDb.get().addOnSuccessListener { documents ->
@@ -110,7 +110,9 @@ fun CreateTransactionScreen(
 
     var showPopUp by remember { mutableStateOf(false) }
 
-    val scope= rememberCoroutineScope()
+    val scope = rememberCoroutineScope()
+
+
 
 
     Column(
@@ -219,8 +221,8 @@ fun CreateTransactionScreen(
                     Text(text = "You don't have enough stock for this transaction")
                     Button(modifier = Modifier.align(Alignment.BottomEnd),
                         onClick = {
-                        showPopUp = false
-                    }) {
+                            showPopUp = false
+                        }) {
                         Text(text = "ok")
                     }
                 }
@@ -274,22 +276,22 @@ fun CreateTransactionScreen(
 
 
             if (!quantityError) {
-                if (dao.getStockOfProduct(selectedProduct.value.StockId).Stock >= quantity.value.toInt()) {
-                    transactionDb.add(
-                        Transaction(
-                            customerId = (selectedCustomer.value.customerId),
-                            productName = selectedProduct.value.ProductName,
-                            quantitySold = quantity.value.toInt(),
-                            productId = selectedProduct.value.ProductId
+                transactionDb.document(selectedTransactionId.value).update(
+                        mapOf(
+                            "customerId" to (selectedCustomer.value.customerId),
+                            "productName" to selectedProduct.value.ProductName,
+                            "quantitySold" to quantity.value.toInt(),
+                            "productId" to selectedProduct.value.ProductId
                         )
-                    ).addOnSuccessListener {
-                        scope.launch { snackbarHostState.showSnackbar("Success!") }
-                        dao.updateStock(stock = Stock(selectedProduct.value.StockId,dao.getStockOfProduct(selectedProduct.value.StockId).Stock - quantity.value.toInt()))
-                    }
-                    navController.popBackStack()
-                } else {
-                    showPopUp = true
+
+                ).addOnSuccessListener {
+                    scope.launch { snackbarHostState.showSnackbar("Success!") }
+                }.addOnFailureListener {
+                    scope.launch { snackbarHostState.showSnackbar("Something Happened Try Again") }
                 }
+
+                    navController.popBackStack()
+
             }
         }) { Text("Insert") }
 

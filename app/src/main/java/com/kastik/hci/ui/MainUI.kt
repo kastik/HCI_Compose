@@ -55,8 +55,10 @@ import com.kastik.hci.ui.screens.create.CreateCustomerScreen
 import com.kastik.hci.ui.screens.create.CreateProductScreen
 import com.kastik.hci.ui.screens.create.CreateSupplierScreen
 import com.kastik.hci.ui.screens.create.CreateTransactionScreen
+import com.kastik.hci.ui.screens.edit.EditCustomerScreen
 import com.kastik.hci.ui.screens.edit.EditProductScreen
 import com.kastik.hci.ui.screens.edit.EditSupplierScreen
+import com.kastik.hci.ui.screens.edit.EditTransactionScreen
 import com.kastik.hci.ui.screens.view.CustomerScreen
 import com.kastik.hci.ui.screens.view.ProductScreen
 import com.kastik.hci.ui.screens.view.SupplierScreen
@@ -173,7 +175,7 @@ fun MainUI() {
                                 dropDownState.value = true
                                 drawerGestureEnabled.value = true
                                 showSelectionOnCard.value = false
-                                TransactionScreen(showSelectionOnCard,action,selectedTransactionId,navController,snackbarHostState)
+                                TransactionScreen(showSelectionOnCard,action,selectedTransactionId,navController,snackbarHostState,customerDb)
                             }
                             composable(AvailableScreens.CreateSupplierScreen.name) {
                                 topBarState.value = false
@@ -215,6 +217,20 @@ fun MainUI() {
                                 showSelectionOnCard.value = false
                                 EditProductScreen(selectedProductId.value,dao,snackbarHostState)
 
+                            }
+                            composable(AvailableScreens.EditCustomerScreen.name) {
+                                topBarState.value = false
+                                drawerGestureEnabled.value = false
+                                showSelectionOnCard.value = false
+                                EditCustomerScreen(customerDb,snackbarHostState,navController,selectedCustomerId,)
+
+                            }
+
+                            composable(AvailableScreens.EditTransactionScreen.name) {
+                                topBarState.value = false
+                                drawerGestureEnabled.value = false
+                                showSelectionOnCard.value = false
+                                EditTransactionScreen(customerDb,transactionDb,snackbarHostState,navController,selectedCustomerId,dao)
                             }
                         }
                     }

@@ -31,10 +31,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import com.kastik.hci.data.CustomerData
 import com.kastik.hci.data.Transaction
+import com.kastik.hci.ui.screens.AvailableScreens
 import com.kastik.hci.utils.modifierBasedOnAction
 import kotlinx.coroutines.launch
 
@@ -49,7 +51,8 @@ fun TransactionCard(
     actionsEnabled: MutableState<Boolean>,
     action: MutableState<CardActions>,
     navController: NavController,
-    snackbarHostState: SnackbarHostState
+    snackbarHostState: SnackbarHostState,
+    customerDb: CollectionReference
 )
 
 {
@@ -109,7 +112,7 @@ fun TransactionCard(
                                 } else {
                                     if (action.value == CardActions.Modify && actionsEnabled.value) {
                                         transactionId.value = transaction.transactionId
-                                        //navController.navigate(AvailableScreens.EditTransactionScreen.name)
+                                        navController.navigate(AvailableScreens.EditTransactionScreen.name)
                                     }
                                 }
                             }
