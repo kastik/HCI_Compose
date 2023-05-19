@@ -24,13 +24,14 @@ import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 import com.kastik.hci.data.AppDao
 import com.kastik.hci.data.Supplier
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun EditSupplierScreen(supplierId: Int, dao: AppDao, snackbarHostState: SnackbarHostState){
+fun EditSupplierScreen(supplierId: Int, dao: AppDao, snackbarHostState: SnackbarHostState,navController: NavController){
 
 
     val supplier = dao.getSupplierWithId(supplierId)
@@ -108,6 +109,7 @@ fun EditSupplierScreen(supplierId: Int, dao: AppDao, snackbarHostState: Snackbar
                     )
                 ) {
                     scope.launch {  snackbarHostState.showSnackbar("Success!")}
+                    navController.popBackStack()
                 } else {
                     scope.launch {  snackbarHostState.showSnackbar("Something Happened Try Again")}
                 }

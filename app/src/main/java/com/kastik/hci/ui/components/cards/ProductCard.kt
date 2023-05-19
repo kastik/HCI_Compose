@@ -29,10 +29,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.kastik.hci.R
 import com.kastik.hci.data.AppDao
 import com.kastik.hci.data.AppDatabase
 import com.kastik.hci.data.Product
@@ -123,7 +125,7 @@ fun ProductCard(
                     if(action.value== CardActions.Delete) {
                         Icon(Icons.Filled.Delete, contentDescription = "Delete the item")
                     }else{
-                        Icon(Icons.Filled.Edit, contentDescription = "Delete the item")
+                        Icon(Icons.Filled.Edit, contentDescription = "Edit the item")
                     }
                 }
                 //Checkbox(checked = checked.value, onCheckedChange = { checked.value = !checked.value })
@@ -134,14 +136,14 @@ fun ProductCard(
                     .weight(1f)
                     .padding(5.dp)
             ) {
-                Text(text = "Product", style = (MaterialTheme.typography.labelSmall))
+                Text(text = stringResource(R.string.Product), style = (MaterialTheme.typography.labelSmall))
                 Text(text = product.ProductName)
                 Spacer(modifier = Modifier.padding(5.dp))
-                Text(text = "Manufacturer", style = (MaterialTheme.typography.labelSmall))
+                Text(text = stringResource(R.string.Manufacturer), style = (MaterialTheme.typography.labelSmall))
                 Text(text = product.ProductManufacturer)
                 Spacer(modifier = Modifier.padding(5.dp))
                 Spacer(modifier = Modifier.padding(5.dp))
-                Text(text = "Stock Quantity", style = (MaterialTheme.typography.labelSmall))
+                Text(text = stringResource(R.string.Stock), style = (MaterialTheme.typography.labelSmall))
                 Text(text = stock.Stock.toString())
 
                 Spacer(modifier = Modifier.padding(5.dp))
@@ -152,7 +154,7 @@ fun ProductCard(
                     .weight(1f)
                     .padding(5.dp)
             ) {
-                Text(text = "Description", style = (MaterialTheme.typography.labelSmall))
+                Text(text = stringResource(R.string.Description), style = (MaterialTheme.typography.labelSmall))
                 Text(text = product.ProductDescription)
                 Spacer(modifier = Modifier.padding(5.dp))
 

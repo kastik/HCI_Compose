@@ -30,7 +30,6 @@ abstract class AppDatabase : RoomDatabase() {
                         AppDatabase::class.java,
                         "Database.db"
                     )
-                        //.fallbackToDestructiveMigration()
                         .allowMainThreadQueries() //TODO Remove at some point
                         .build()
 

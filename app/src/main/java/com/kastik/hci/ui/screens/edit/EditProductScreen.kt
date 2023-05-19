@@ -31,6 +31,7 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 import com.kastik.hci.data.AppDao
 import com.kastik.hci.data.Product
 import com.kastik.hci.data.Stock
@@ -39,7 +40,7 @@ import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun EditProductScreen(productId: Int,dao: AppDao,snackbarHostState: SnackbarHostState){
+fun EditProductScreen(productId: Int,dao: AppDao,snackbarHostState: SnackbarHostState,navController: NavController){
 
     val product = dao.getProductWithId(productId)
 
@@ -211,6 +212,7 @@ fun EditProductScreen(productId: Int,dao: AppDao,snackbarHostState: SnackbarHost
                         )
                     ) {
                         scope.launch {  snackbarHostState.showSnackbar("Success!")}
+                        navController.popBackStack()
                     } else {
                         scope.launch {  snackbarHostState.showSnackbar("Something Happened Try Again")}
                     }

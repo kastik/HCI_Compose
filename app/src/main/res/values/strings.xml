@@ -1,4 +1,21 @@
 <resources>
     <string name="app_name">HCI_Compose</string>
     <string name="title_activity_main">MainActivity</string>
+    <string name="insert">Insert</string>
+    <string name="success">Success</string>
+    <string name="error">Something Happened Please Try Again</string>
+    <string name="stockError">You don\'t have enough stock for this transaction</string>
+    <string name="numberFormatError">Please provide only numbers</string>
+    <string name="InsertACustomer">Insert A Customer First</string>
+    <string name="SelectACustomer">Select A Customer</string>
+    <string name="InsertAProduct">Insert A Product First</string>
+    <string name="SelectAProduct">Select A Product</string>
+    <string name="Product">Product</string>
+    <string name="Manufacturer">Manufacturer</string>
+    <string name="Stock">Stock</string>
+    <string name="Description">Description</string>
+    <string name="CustomerName">Customer Name</string>
+    <string name="CustomerLastname">Customer Lastname</string>
+    <string name="SupplierName">Supplier Name</string>
+    <string name="SupplierLocation">Supplier Location</string>
 </resources>

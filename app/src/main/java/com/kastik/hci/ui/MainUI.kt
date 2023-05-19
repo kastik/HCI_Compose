@@ -1,5 +1,6 @@
 package com.kastik.hci.ui
 
+import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -208,21 +209,22 @@ fun MainUI() {
                                 topBarState.value = false
                                 drawerGestureEnabled.value = false
                                 showSelectionOnCard.value = false
-                                EditSupplierScreen(selectedSupplierId.value,dao,snackbarHostState)
+                                EditSupplierScreen(selectedSupplierId.value,dao,snackbarHostState,navController)
 
                             }
                             composable(AvailableScreens.EditProductScreen.name) {
                                 topBarState.value = false
                                 drawerGestureEnabled.value = false
                                 showSelectionOnCard.value = false
-                                EditProductScreen(selectedProductId.value,dao,snackbarHostState)
+                                EditProductScreen(selectedProductId.value,dao,snackbarHostState,navController)
 
                             }
                             composable(AvailableScreens.EditCustomerScreen.name) {
                                 topBarState.value = false
                                 drawerGestureEnabled.value = false
                                 showSelectionOnCard.value = false
-                                EditCustomerScreen(customerDb,snackbarHostState,navController,selectedCustomerId,)
+                                Log.d("MyLog","Got in")
+                                EditCustomerScreen(customerDb,snackbarHostState,navController,selectedCustomerId)
 
                             }
 
