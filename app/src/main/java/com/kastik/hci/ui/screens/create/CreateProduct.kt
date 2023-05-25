@@ -1,5 +1,6 @@
 package com.kastik.hci.ui.screens.create
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -27,8 +28,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -43,6 +42,7 @@ import com.kastik.hci.data.Product
 import com.kastik.hci.data.Stock
 import com.kastik.hci.data.Supplier
 import com.kastik.hci.utils.checkNumberInput
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
 
@@ -51,7 +51,8 @@ import kotlinx.coroutines.launch
 fun CreateProductScreen(
     dao: AppDao,
     snackbarHostState: SnackbarHostState,
-    navController: NavController
+    navController: NavController,
+    scope: CoroutineScope
 ) {
     val productName = remember { mutableStateOf("") }
     val manufacturer = remember { mutableStateOf("") }
@@ -62,27 +63,22 @@ fun CreateProductScreen(
 
     var expanded by remember { mutableStateOf(false) }
     val supplierNames = dao.getAllSuppliers().collectAsState(initial = emptyList())
-    val selectedText = remember { mutableStateOf("") }
-
-    selectedText.value = if (supplierNames.value.isEmpty()) {
-        "Insert A Supplier First"
-    } else {
-        "Select A Supplier"
-    }
+    val selectedText = remember { mutableStateOf("Select A Supplier") }
 
     val selectedSupplier = remember { mutableStateOf(Supplier(0, "", "")) }
 
-    var priceError by rememberSaveable { mutableStateOf(false) }
-    var quantityError by rememberSaveable { mutableStateOf(false) }
+    var priceError by remember { mutableStateOf(false) }
+    var quantityError by remember { mutableStateOf(false) }
 
-    val scope = rememberCoroutineScope()
 
     Column(
         Modifier
             .fillMaxWidth()
             .wrapContentHeight()
             .padding(horizontal = 16.dp)
-            .verticalScroll(rememberScrollState())
+            .verticalScroll(rememberScrollState()),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
             modifier = Modifier
@@ -263,13 +259,12 @@ fun CreateProductScreen(
 
         FilledTonalButton(
             modifier = Modifier
-                .align(Alignment.End)
-                .padding(10.dp),
+                .padding(10.dp)
+                .align(Alignment.End),
             onClick = {
                 scope.launch {
-                    val stockId = dao.insertStock(Stock(Stock = stock.value.toInt()))
-
-                    if (!priceError || !quantityError) {
+                    if (price.value != "" && stock.value != "" && selectedSupplier.value.Name != "") {
+                        val stockId = dao.insertStock(Stock(Stock = stock.value.toInt()))
                         if (dao.insertProduct(
                                 Product(
                                     SupplierId = selectedSupplier.value.SupplierId,
@@ -281,13 +276,15 @@ fun CreateProductScreen(
                                 )
                             ) > 0
                         ) {
+                            navController.popBackStack()
                             snackbarHostState.showSnackbar("Success!")
                         } else {
                             snackbarHostState.showSnackbar("Something Happened Try Again")
                         }
+                    }else {
+                        snackbarHostState.showSnackbar("Wrong Inputs")
                     }
                 }
-                navController.popBackStack()
             }
         ) {
             Text("Insert")

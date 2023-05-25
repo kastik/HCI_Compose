@@ -2,14 +2,15 @@ package com.kastik.hci.ui.screens.edit
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -33,7 +34,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -49,6 +49,7 @@ import com.kastik.hci.data.AppDao
 import com.kastik.hci.data.CustomerData
 import com.kastik.hci.data.Product
 import com.kastik.hci.utils.checkNumberInput
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -59,7 +60,8 @@ fun EditTransactionScreen(
     snackbarHostState: SnackbarHostState,
     navController: NavController,
     selectedTransactionId: MutableState<String>,
-    dao: AppDao
+    dao: AppDao,
+    scope: CoroutineScope
 ) {
     val quantity = remember { mutableStateOf("") }
     val focusManager = LocalFocusManager.current
@@ -79,31 +81,20 @@ fun EditTransactionScreen(
     }
 
 
+    val selectedCustomerText = remember { mutableStateOf("Select A Customer") }
+    val selectedProductIdText = remember { mutableStateOf("Select A Product") }
 
-    val selectedCustomerText = remember { mutableStateOf("") }
-    selectedCustomerText.value = if (customerData.isEmpty()) {
-        "Insert a customer first"
-    } else {
-        "Select a customer"
-    }
-
-    val selectedProductIdText = remember { mutableStateOf("") }
-    selectedProductIdText.value = if (productData.value.collectAsState(initial = emptyList()).value.isEmpty()) {
-        "Insert a product first"
-    } else {
-        "Select a product"
-    }
 
     val selectedCustomer = remember { mutableStateOf(CustomerData()) }
     val selectedProduct = remember { mutableStateOf(Product(0, 0, 0, "", "", 0, "")) }
     var quantityError by rememberSaveable { mutableStateOf(false) }
     var showPopUp by remember { mutableStateOf(false) }
-    val scope = rememberCoroutineScope()
 
     Column(
         Modifier
-            .fillMaxWidth()
-            .wrapContentSize()
+            .fillMaxSize(),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
             modifier = Modifier
@@ -301,7 +292,7 @@ fun EditTransactionScreen(
                 }
             }
         ) {
-            Text("Insert")
+            Text("Update")
         }
     }
 }

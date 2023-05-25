@@ -1,2 +1,4 @@
 -keepattributes LineNumberTable,SourceFile
 -renamesourcefileattribute SourceFile
+-keep class com.kastik.hci.data.CustomerData { *; }
+-keep class com.kastik.hci.data.Transaction { *; }

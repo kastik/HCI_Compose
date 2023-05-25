@@ -114,12 +114,13 @@ interface AppDao {
     //suspend
     fun getSupplierWithId(supplierId: Int): Supplier
 
+    @Query("SELECT COUNT(ProductId) FROM PRODUCT")
+    fun getProductCount(): Flow<Int>
     @Query("SELECT SUM(STOCK) FROM STOCK")
-    suspend fun getStockCount(): Int
+    fun getStockCount(): Flow<Int>
 
     @Query("SELECT COUNT(SupplierId) FROM Supplier")
-    suspend
-    fun getSupplierCount(): Int
+    fun getSupplierCount(): Flow<Int>
 
     @Delete
     suspend fun deleteProduct(product: Product): Int
