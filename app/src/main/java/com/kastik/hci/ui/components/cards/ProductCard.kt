@@ -1,7 +1,6 @@
 package com.kastik.hci.ui.components.cards
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -23,7 +22,6 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -32,6 +30,7 @@ import com.kastik.hci.data.Product
 import com.kastik.hci.data.Stock
 import com.kastik.hci.ui.screens.AvailableScreens
 import com.kastik.hci.utils.modifierBasedOnAction
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
 
@@ -45,8 +44,8 @@ fun ProductCard(
     dao: AppDao,
     navController: NavController,
     snackbarHostState: SnackbarHostState,
+    scope: CoroutineScope
 ) {
-    val scope = rememberCoroutineScope()
 
     Card(
         modifier = Modifier
@@ -54,7 +53,7 @@ fun ProductCard(
             .padding(10.dp)
             .height(IntrinsicSize.Min),
         shape = MaterialTheme.shapes.large,
-        border = BorderStroke(2.dp, MaterialTheme.colorScheme.inversePrimary),
+        //border = BorderStroke(2.dp, MaterialTheme.colorScheme.inversePrimary),
         elevation = CardDefaults.cardElevation(defaultElevation = 10.dp)
     ) {
         Row {
@@ -101,11 +100,11 @@ fun ProductCard(
                 Text(text = "Manufacturer", style = (MaterialTheme.typography.labelSmall))
                 Text(text = product.ProductManufacturer)
                 Spacer(modifier = Modifier.padding(5.dp))
-                Text(text = "Stock", style = (MaterialTheme.typography.labelSmall))
-                Text(text = stock.Stock.toString())
-                Spacer(modifier = Modifier.padding(5.dp))
                 Text(text = "Price", style = (MaterialTheme.typography.labelSmall))
                 Text(text = product.ProductPrice.toString())
+                Spacer(modifier = Modifier.padding(5.dp))
+                Text(text = "Supplier", style = (MaterialTheme.typography.labelSmall))
+                Text(text = dao.getSupplierWithId(product.SupplierId).Name)
             }
 
             Column(
@@ -115,6 +114,9 @@ fun ProductCard(
             ) {
                 Text(text = "Description", style = (MaterialTheme.typography.labelSmall))
                 Text(text = product.ProductDescription)
+                Spacer(modifier = Modifier.padding(5.dp))
+                Text(text = "Stock", style = (MaterialTheme.typography.labelSmall))
+                Text(text = stock.Stock.toString())
                 Spacer(modifier = Modifier.padding(5.dp))
             }
         }

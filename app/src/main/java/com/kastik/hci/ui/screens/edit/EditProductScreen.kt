@@ -1,10 +1,11 @@
 package com.kastik.hci.ui.screens.edit
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
@@ -23,7 +24,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -38,6 +38,7 @@ import com.kastik.hci.data.AppDao
 import com.kastik.hci.data.Product
 import com.kastik.hci.data.Stock
 import com.kastik.hci.utils.checkNumberInput
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -46,9 +47,9 @@ fun EditProductScreen(
     productId: Int,
     dao: AppDao,
     snackbarHostState: SnackbarHostState,
-    navController: NavController
+    navController: NavController,
+    scope: CoroutineScope
 ) {
-    val scope = rememberCoroutineScope()
     val product = dao.getProductWithId(productId)
     val productName = remember { mutableStateOf(product.ProductName) }
     val manufacturer = remember { mutableStateOf(product.ProductManufacturer) }
@@ -64,8 +65,10 @@ fun EditProductScreen(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .wrapContentSize()
-            .verticalScroll(rememberScrollState())
+            .wrapContentHeight()
+            .verticalScroll(rememberScrollState()),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
 
     ) {
         Text(
@@ -192,7 +195,7 @@ fun EditProductScreen(
 
         FilledTonalButton(
             onClick = {
-                if (!priceError && !quantityError) {
+                if (stock.value != "" && price.value != "") {
                     dao.updateStock(Stock(Stock = stock.value.toInt(), StockId = product.StockId))
                     if (dao.updateProduct(
                             Product(

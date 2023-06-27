@@ -7,6 +7,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.navigation.NavController
 import com.kastik.hci.data.AppDao
 import com.kastik.hci.ui.components.cards.CardActions
@@ -23,9 +24,10 @@ fun SupplierScreen(
     snackbarHostState: SnackbarHostState,
 ) {
     val suppliers by dao.getAllSuppliers().collectAsState(initial = emptyList())
+    val scope = rememberCoroutineScope()
     LazyColumn {
         items(suppliers){
-            SupplierCard(it,showSelectionOnCard,action,dao,snackbarHostState,navController,selectedSupplierId)
+            SupplierCard(it,showSelectionOnCard,action,dao,snackbarHostState,navController,selectedSupplierId,scope)
         }
     }
 

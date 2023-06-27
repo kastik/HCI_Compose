@@ -1,7 +1,6 @@
 package com.kastik.hci.ui.components.cards
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -23,7 +22,6 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -31,6 +29,7 @@ import com.kastik.hci.data.AppDao
 import com.kastik.hci.data.Supplier
 import com.kastik.hci.ui.screens.AvailableScreens
 import com.kastik.hci.utils.modifierBasedOnAction
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
 
@@ -42,15 +41,15 @@ fun SupplierCard(
     database: AppDao,
     snackbarHostState:SnackbarHostState,
     navController:NavController,
-    selectedSupplierId: MutableState<Int>) {
-    val scope = rememberCoroutineScope()
+    selectedSupplierId: MutableState<Int>,
+    scope: CoroutineScope) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .padding(10.dp)
             .height(IntrinsicSize.Min),
         shape = MaterialTheme.shapes.large,
-        border = BorderStroke(2.dp, MaterialTheme.colorScheme.inversePrimary),
+        //border = BorderStroke(2.dp, MaterialTheme.colorScheme.inversePrimary),
         elevation = CardDefaults.cardElevation(defaultElevation = 10.dp)
     ) {
         Row {

@@ -1,7 +1,6 @@
 package com.kastik.hci.ui.components.cards
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -44,7 +43,7 @@ fun CustomerCard(
     snackbarHostState: SnackbarHostState,
     customerDb: CollectionReference,
 
-){
+    ) {
     val scope = rememberCoroutineScope()
     Card(
         modifier = Modifier
@@ -52,7 +51,7 @@ fun CustomerCard(
             .padding(10.dp)
             .height(IntrinsicSize.Min),
         shape = MaterialTheme.shapes.large,
-        border = BorderStroke(2.dp, MaterialTheme.colorScheme.inversePrimary),
+        //border = BorderStroke(2.dp, MaterialTheme.colorScheme.inversePrimary),
         elevation = CardDefaults.cardElevation(defaultElevation = 10.dp)
     ) {
         Row {

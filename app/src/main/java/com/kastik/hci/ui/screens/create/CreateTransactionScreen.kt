@@ -1,14 +1,11 @@
 package com.kastik.hci.ui.screens.create
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
@@ -32,8 +29,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -42,7 +37,6 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Popup
 import androidx.navigation.NavController
 import com.google.firebase.firestore.CollectionReference
 import com.kastik.hci.data.AppDao
@@ -50,6 +44,7 @@ import com.kastik.hci.data.CustomerData
 import com.kastik.hci.data.Product
 import com.kastik.hci.data.Transaction
 import com.kastik.hci.utils.checkNumberInput
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -59,7 +54,8 @@ fun CreateTransactionScreen(
     customerDb: CollectionReference,
     snackbarHostState: SnackbarHostState,
     navController: NavController,
-    dao: AppDao
+    dao: AppDao,
+    scope: CoroutineScope
 ) {
     val quantity = remember { mutableStateOf("") }
     val focusManager = LocalFocusManager.current
@@ -67,13 +63,11 @@ fun CreateTransactionScreen(
     var productExpanded by remember { mutableStateOf(false) }
     val customerData = remember { mutableStateListOf<CustomerData>() }
     val productData = remember { mutableStateOf(dao.getAllProducts()) }
-    val selectedCustomerText = remember { mutableStateOf("") }
-    val selectedProductIdText = remember { mutableStateOf("") }
+    val selectedCustomerText = remember { mutableStateOf("Select A Customer") }
+    val selectedProductIdText = remember { mutableStateOf("Select A Product") }
     val selectedCustomer = remember { mutableStateOf(CustomerData()) }
     val selectedProduct = remember { mutableStateOf(Product(0, 0, 0, "", "", 0, "")) }
-    var quantityError by rememberSaveable { mutableStateOf(false) }
-    var showPopUp by remember { mutableStateOf(false) }
-    val scope = rememberCoroutineScope()
+    var quantityError by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
         customerDb.get().addOnSuccessListener { documents ->
@@ -82,13 +76,9 @@ fun CreateTransactionScreen(
             }
         }
     }
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .wrapContentSize(Alignment.Center)
-    ) {
         Column(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
 
@@ -192,26 +182,7 @@ fun CreateTransactionScreen(
                     }
                 }
 
-                AnimatedVisibility(visible = showPopUp) {
-                    Popup(alignment = Alignment.Center) {
-                        Box(
-                            modifier = Modifier
-                                .size(200.dp, 70.dp)
-                                .background(
-                                    MaterialTheme.colorScheme.error,
-                                    RoundedCornerShape(16.dp)
-                                ),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Text(text = "You don't have enough stock for this transaction")
-                            FilledTonalButton(onClick = {
-                                showPopUp = false
-                            }) {
-                                Text(text = "OK")
-                            }
-                        }
-                    }
-                }
+
 
                 Spacer(modifier = Modifier.padding(10.dp))
 
@@ -266,7 +237,7 @@ fun CreateTransactionScreen(
                         .align(Alignment.End)
                         .padding(10.dp),
                     onClick = {
-                        if (!quantityError) {
+                        if (quantity.value != "" && selectedProduct.value.ProductId != 0 && selectedCustomer.value.customerId != "") {
                             val stock = dao.getStockOfProduct(selectedProduct.value.StockId)
                             if (stock.Stock >= quantity.value.toInt()) {
                                 transactionDb.add(
@@ -283,11 +254,14 @@ fun CreateTransactionScreen(
                                             Stock = stock.Stock - quantity.value.toInt()
                                         )
                                     )
+                                    navController.popBackStack()
                                 }
-                                navController.popBackStack()
-                            } else {
-                                showPopUp = true
+
+                            }else {
+                                scope.launch{snackbarHostState.showSnackbar("Not Enough Quantity in stock")}
                             }
+                        }else{
+                            scope.launch{snackbarHostState.showSnackbar("Check your inputs")}
                         }
                     }
                 ) {
@@ -295,5 +269,4 @@ fun CreateTransactionScreen(
                 }
             }
         }
-    }
     }
